@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     'store.apps.StoreConfig',
     'authen.apps.AuthenConfig',
+    'vendor.apps.VendorConfig',
 ]
 
 MIDDLEWARE = [

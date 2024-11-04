@@ -14,7 +14,7 @@ def store(request):
 
     products = Product.objects.all()
     context = {'products' : products , 'cartItems' : cartItems}
-    print(request.user)
+    # print(request.user)
     return render(request , 'store/store.html' , context)
 
 def cart(request):

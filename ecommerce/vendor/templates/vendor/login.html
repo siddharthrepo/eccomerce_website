@@ -1,0 +1,36 @@
+{% extends 'layout/app.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-sm-6">
+        <h2 class="text-muted">Vendor Login</h2>
+
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <p class="alert {{ message.tags }}">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'login_vendor' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">Email:</label>
+                <input type="email" name="{{ form.email.name }}" class="form-control" value="{{ form.email.value }}" required />
+                <span class="text-danger">{{ form.email.errors }}</span>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}">Password:</label>
+                <input type="password" name="{{ form.password.name }}" class="form-control" required />
+                <span class="text-danger">{{ form.password.errors }}</span>
+            </div>
+
+            <button type="submit" class="btn btn-dark">Login</button>
+            <a href="{% url 'register_vendor' %}" class="btn btn-secondary">Register</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
