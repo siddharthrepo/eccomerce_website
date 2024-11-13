@@ -101,10 +101,12 @@ def processOrder(request):
 
 def send_total_to_cart(request):
     if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer , complete=False)
-        cartItems = order.get_cart_items
-        
+        try:
+            customer = request.user.customer
+            order, created = Order.objects.get_or_create(customer=customer , complete=False)
+            cartItems = order.get_cart_items  
+        except Exception as e:
+            cartItems = 0  
     else:
         cookieData = cookieCart(request)
         cartItems =  cookieData['cartItems']

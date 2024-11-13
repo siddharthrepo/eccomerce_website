@@ -1,14 +1,17 @@
 from django import forms
 from .models import Vendor
+from django.contrib.auth.models import User
 
 class VendorRegistrationForm(forms.ModelForm):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'placeholder': 'Password'}),
-        label="Password"
+        label="Password",
+        required=False
     )
     confirm_password = forms.CharField(
         widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}),
-        label="Confirm Password"
+        label="Confirm Password",
+        required=False
     )
 
     class Meta:
@@ -27,16 +30,30 @@ class VendorRegistrationForm(forms.ModelForm):
         password = cleaned_data.get("password")
         confirm_password = cleaned_data.get("confirm_password")
 
-        if password and confirm_password and password != confirm_password:
-            self.add_error('confirm_password', "Passwords do not match.")
+        if password or confirm_password:
+            if password != confirm_password:
+                self.add_error('confirm_password', "Passwords do not match.")
         
         return cleaned_data
 
     def save(self, commit=True):
         vendor = super().save(commit=False)
-        vendor.set_password(self.cleaned_data["password"])  # Hash the password
+
+        # If a password was entered, create a User instance
+        password = self.cleaned_data.get("password")
+        if password:
+            user = User(
+                username=self.cleaned_data["email"],  # or other unique field for username
+                email=self.cleaned_data["email"]
+            )
+            user.set_password(password)
+            if commit:
+                user.save()
+            vendor.user = user  # Link Vendor to User
+        
         if commit:
             vendor.save()
+
         return vendor
 
 

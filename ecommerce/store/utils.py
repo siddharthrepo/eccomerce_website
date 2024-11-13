@@ -36,10 +36,17 @@ def cookieCart(request):
 
 def cartData(request):
     if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer , complete=False)
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items 
+        try:
+            customer = request.user.customer
+            order, created = Order.objects.get_or_create(customer=customer , complete=False)
+            items = order.orderitem_set.all()
+            cartItems = order.get_cart_items 
+        except Exception:
+            # if vendor logs in the main store page
+            order = 0
+            items = 0
+            cartItems = 0
+
     else:
         cookieData = cookieCart(request)
         items = cookieData['items']

@@ -1,4 +1,4 @@
-{% extends 'layout/app.html' %}
+{% extends 'vendorLayout/app.html' %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -17,50 +17,56 @@
             {% csrf_token %}
 
             <div class="form-group">
-                <label for="{{ form.vendor_name.id_for_label }}">Vendor Name:</label>
-                <input type="text" name="{{ form.vendor_name.name }}" class="form-control" value="{{ form.vendor_name.value }}" />
+                {{ form.username.label_tag }}
+                {{ form.username }}
+                <span class="text-danger">{{ form.username.errors }}</span>
+            </div>
+
+            <div class="form-group">
+                {{ form.vendor_name.label_tag }}
+                {{ form.vendor_name }}
                 <span class="text-danger">{{ form.vendor_name.errors }}</span>
             </div>
 
             <div class="form-group">
-                <label for="{{ form.store_name.id_for_label }}">Store Name:</label>
-                <input type="text" name="{{ form.store_name.name }}" class="form-control" value="{{ form.store_name.value }}" />
+                {{ form.store_name.label_tag }}
+                {{ form.store_name }}
                 <span class="text-danger">{{ form.store_name.errors }}</span>
             </div>
 
             <div class="form-group">
-                <label for="{{ form.email.id_for_label }}">Email:</label>
-                <input type="email" name="{{ form.email.name }}" class="form-control" value="{{ form.email.value }}" />
+                {{ form.email.label_tag }}
+                {{ form.email }}
                 <span class="text-danger">{{ form.email.errors }}</span>
             </div>
 
             <div class="form-group">
-                <label for="{{ form.phone_number.id_for_label }}">Phone Number:</label>
-                <input type="text" name="{{ form.phone_number.name }}" class="form-control" value="{{ form.phone_number.value }}" />
+                {{ form.phone_number.label_tag }}
+                {{ form.phone_number }}
                 <span class="text-danger">{{ form.phone_number.errors }}</span>
             </div>
 
             <div class="form-group">
-                <label for="{{ form.address.id_for_label }}">Address:</label>
-                <textarea name="{{ form.address.name }}" class="form-control">{{ form.address.value }}</textarea>
+                {{ form.address.label_tag }}
+                {{ form.address }}
                 <span class="text-danger">{{ form.address.errors }}</span>
             </div>
 
             <div class="form-group">
-                <label for="{{ form.profile_image.id_for_label }}">Profile Image:</label>
-                <input type="file" name="{{ form.profile_image.name }}" class="form-control" />
+                {{ form.profile_image.label_tag }}
+                {{ form.profile_image }}
                 <span class="text-danger">{{ form.profile_image.errors }}</span>
             </div>
 
             <div class="form-group">
-                <label for="{{ form.password.id_for_label }}">Password:</label>
-                <input type="password" name="{{ form.password.name }}" class="form-control" />
+                {{ form.password.label_tag }}
+                {{ form.password }}
                 <span class="text-danger">{{ form.password.errors }}</span>
             </div>
 
             <div class="form-group">
-                <label for="{{ form.confirm_password.id_for_label }}">Confirm Password:</label>
-                <input type="password" name="{{ form.confirm_password.name }}" class="form-control" />
+                {{ form.confirm_password.label_tag }}
+                {{ form.confirm_password }}
                 <span class="text-danger">{{ form.confirm_password.errors }}</span>
             </div>
 

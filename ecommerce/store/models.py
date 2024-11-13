@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from vendor.models import Vendor
 # Create your models here.
 
 class Customer(models.Model):
@@ -11,6 +12,8 @@ class Customer(models.Model):
         return self.name
     
 class Product(models.Model):
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="products" , null=True , blank=True) 
+    inventory = models.PositiveIntegerField(null=True)
     name = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=7 , decimal_places=2)
     digital = models.BooleanField(default=False , null=True , blank=True)
