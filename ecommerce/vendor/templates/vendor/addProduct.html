@@ -1,0 +1,13 @@
+{% extends 'vendorLayout/app.html' %}
+
+{% block content %}
+    <div class="container">
+        <h2>Add Product</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn">Add Product</button>
+        </form>
+    </div>
+{% endblock content%}
+

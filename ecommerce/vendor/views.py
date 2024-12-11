@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login , logout
 
 
+
 def vendor_register_view(request):
     if request.method == 'POST':
         form = VendorRegistrationForm(request.POST, request.FILES)
@@ -86,7 +87,6 @@ def product_management(request):
     try:
         vendor = Vendor.objects.get(email=request.user)  # Adjust field as needed
         print(vendor)
-        # return render(request, "vendor/ProductManagement.html")
     except Vendor.DoesNotExist:
         return render(request, "vendor/404.html")  # Redirect if the user is not a vendor
 
@@ -102,3 +102,20 @@ def product_management(request):
         "products": products,
     }
     return render(request, "vendor/ProductManagement.html", context)
+
+from .forms import ProductForm
+@login_required
+def add_product(request):
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            # Associate with logged-in vendor (update with your logic)
+            if request.user.is_authenticated and hasattr(request.user, 'vendor'):
+                product.vendor = request.user.vendor
+            product.save()
+            return redirect('product_management')  # Replace with your vendor dashboard URL name
+    else:
+        form = ProductForm()
+
+    return render(request, 'vendor/addProduct.html', {'form': form})

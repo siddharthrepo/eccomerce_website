@@ -12,7 +12,9 @@ def store(request):
     data = cartData(request)
     cartItems = data['cartItems']
 
-    products = Product.objects.all()
+    products = Product.objects.all()[:50]
+    # getting first 50 products which have images
+    print(len(Product.objects.all()))
     context = {'products' : products , 'cartItems' : cartItems}
     # print(request.user)
     return render(request , 'store/store.html' , context)
@@ -113,3 +115,14 @@ def send_total_to_cart(request):
         
     context = {'cartItems':cartItems }
     return JsonResponse(context)
+
+
+def search_product(request):
+    if request.method == "POST":
+        searched = request.POST['searched']
+        searched__products = Product.objects.filter(name__icontains=searched)
+        return render(request , 'store/searched.html' , {"searched":searched , "products":searched__products})
+    else:
+        return render(request , 'store/searched.html' , {})
+
+    

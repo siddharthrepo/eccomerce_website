@@ -7,4 +7,5 @@ urlpatterns = [
     path("login_vendor/" , views.vendor_login_view , name="login_vendor"),
     path("logout_vendor/" , views.vendor_logout_view , name="logout_vendor"),
     path("product_management/" , views.product_management , name="product_management"),
+    path('vendor/add-product/', views.add_product, name='add_product'),
 ]

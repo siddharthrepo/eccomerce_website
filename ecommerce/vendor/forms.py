@@ -69,3 +69,13 @@ class VendorLoginForm(forms.Form):
         widget=forms.PasswordInput(attrs={'placeholder': 'Password'}),
         label="Password"
     )
+
+from store.models import Product
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['inventory', 'name', 'price', 'digital', 'image']
+        widgets = {
+            'digital': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }

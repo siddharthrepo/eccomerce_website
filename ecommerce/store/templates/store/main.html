@@ -60,7 +60,7 @@
 	</script>
 
 	<script>
-		fetch('api/data/')
+		fetch('/api/data/')
             .then(response => response.json())
             .then(data => {
                 // Update the HTML with the fetched data
@@ -85,6 +85,11 @@
 	 
 	    </ul>
 	    <div class="form-inline my-2 my-lg-0">
+			<form class="d-flex" method="post" action="{%url 'search'%}">
+				{%csrf_token%}
+				<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="searched">
+				<button class="btn btn-outline-secondary" type="submit">Search</button>
+			</form>
 			{% if request.user.is_authenticated%}
 				<a href="{% url 'logout'%}" class="btn btn-warning">logout</a>
 			{% else %}
