@@ -1,2 +1,5 @@
 /todo
 /.venv
+/.env
+/datasets
+/backup

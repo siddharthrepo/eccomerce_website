@@ -1,78 +1,108 @@
 {% extends 'vendorLayout/app.html' %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-sm-6">
-        <h2 class="text-muted">Vendor Register</h2>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white text-center">
+                    <h3>Vendor Registration</h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        <div class="mb-3">
+                            {% for message in messages %}
+                                <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
 
-        {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                    <p class="alert {{ message.tags }}">{{ message }}</p>
-                {% endfor %}
+                    <form method="POST" action="{% url 'register_vendor' %}" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            {{ form.username.label_tag }}
+                            <input type="text" name="username" value="{{ form.username.value }}" class="form-control">
+                            {% if form.username.errors %}
+                                <div class="text-danger small">{{ form.username.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.vendor_name.label_tag }}
+                            <input type="text" name="vendor_name" value="{{ form.vendor_name.value }}" class="form-control">
+                            {% if form.vendor_name.errors %}
+                                <div class="text-danger small">{{ form.vendor_name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.store_name.label_tag }}
+                            <input type="text" name="store_name" value="{{ form.store_name.value }}" class="form-control">
+                            {% if form.store_name.errors %}
+                                <div class="text-danger small">{{ form.store_name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.email.label_tag }}
+                            <input type="email" name="email" value="{{ form.email.value }}" class="form-control">
+                            {% if form.email.errors %}
+                                <div class="text-danger small">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.phone_number.label_tag }}
+                            <input type="text" name="phone_number" value="{{ form.phone_number.value }}" class="form-control">
+                            {% if form.phone_number.errors %}
+                                <div class="text-danger small">{{ form.phone_number.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.address.label_tag }}
+                            <textarea name="address" class="form-control">{{ form.address.value }}</textarea>
+                            {% if form.address.errors %}
+                                <div class="text-danger small">{{ form.address.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.profile_image.label_tag }}
+                            <input type="file" name="profile_image" class="form-control">
+                            {% if form.profile_image.errors %}
+                                <div class="text-danger small">{{ form.profile_image.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.password.label_tag }}
+                            <input type="password" name="password" class="form-control">
+                            {% if form.password.errors %}
+                                <div class="text-danger small">{{ form.password.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.confirm_password.label_tag }}
+                            <input type="password" name="confirm_password" class="form-control">
+                            {% if form.confirm_password.errors %}
+                                <div class="text-danger small">{{ form.confirm_password.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-success">Submit</button>
+                            <a href="{% url 'login_vendor' %}" class="btn btn-secondary">Login</a>
+                        </div>
+                    </form>
+                </div>
             </div>
-        {% endif %}
-
-        <form method="POST" action="{% url 'register_vendor' %}" enctype="multipart/form-data">
-            {% csrf_token %}
-
-            <div class="form-group">
-                {{ form.username.label_tag }}
-                {{ form.username }}
-                <span class="text-danger">{{ form.username.errors }}</span>
-            </div>
-
-            <div class="form-group">
-                {{ form.vendor_name.label_tag }}
-                {{ form.vendor_name }}
-                <span class="text-danger">{{ form.vendor_name.errors }}</span>
-            </div>
-
-            <div class="form-group">
-                {{ form.store_name.label_tag }}
-                {{ form.store_name }}
-                <span class="text-danger">{{ form.store_name.errors }}</span>
-            </div>
-
-            <div class="form-group">
-                {{ form.email.label_tag }}
-                {{ form.email }}
-                <span class="text-danger">{{ form.email.errors }}</span>
-            </div>
-
-            <div class="form-group">
-                {{ form.phone_number.label_tag }}
-                {{ form.phone_number }}
-                <span class="text-danger">{{ form.phone_number.errors }}</span>
-            </div>
-
-            <div class="form-group">
-                {{ form.address.label_tag }}
-                {{ form.address }}
-                <span class="text-danger">{{ form.address.errors }}</span>
-            </div>
-
-            <div class="form-group">
-                {{ form.profile_image.label_tag }}
-                {{ form.profile_image }}
-                <span class="text-danger">{{ form.profile_image.errors }}</span>
-            </div>
-
-            <div class="form-group">
-                {{ form.password.label_tag }}
-                {{ form.password }}
-                <span class="text-danger">{{ form.password.errors }}</span>
-            </div>
-
-            <div class="form-group">
-                {{ form.confirm_password.label_tag }}
-                {{ form.confirm_password }}
-                <span class="text-danger">{{ form.confirm_password.errors }}</span>
-            </div>
-
-            <button type="submit" class="btn btn-dark">Submit</button>
-            <a href="{% url 'login_vendor' %}" class="btn btn-secondary">Login</a>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}

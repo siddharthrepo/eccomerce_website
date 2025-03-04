@@ -5,3 +5,7 @@ vendor
 email, password
 
 1.shiv@g.com , shiv
+2.puneet@g.com , puneet
+
+user
+1. rahul , rahul

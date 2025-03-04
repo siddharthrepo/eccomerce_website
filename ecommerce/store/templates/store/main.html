@@ -63,7 +63,7 @@
 		fetch('/api/data/')
             .then(response => response.json())
             .then(data => {
-                // Update the HTML with the fetched data
+                // Updating the HTML with the fetched data
 				document.getElementById('cart-total').textContent = data.cartItems;
                 console.log("data found :" + data.cartItems)
             })
@@ -88,7 +88,9 @@
 			<form class="d-flex" method="post" action="{%url 'search'%}">
 				{%csrf_token%}
 				<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="searched">
-				<button class="btn btn-outline-secondary" type="submit">Search</button>
+				<button style="background-color: #28a745; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 5px;height: 40px; 
+           		width: 120px; margin:0px 10px" 
+				type="submit" type="submit">Search</button>
 			</form>
 			{% if request.user.is_authenticated%}
 				<a href="{% url 'logout'%}" class="btn btn-warning">logout</a>
@@ -98,7 +100,8 @@
 
 	     	
 	     	<a href="{% url 'cart' %}">
-	    		<img  id="cart-icon" src="{% static 'images/cart.png' %}">
+				<!-- style="width:25px;display: inline-block;margin-left: 15px;height:auto" -->
+	    		<img  id="cart-icon" src="{% static 'images/cart.png' %}" >
 	    	</a>
 			<!-- this carItems is not being used from here , it is being fetched from js and getting updated via dom -->
 	    	<p id="cart-total">{{cartItems}}</p> <br>

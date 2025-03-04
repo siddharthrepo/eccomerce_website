@@ -1,25 +1,52 @@
-{% extends 'layout/app.html'%}
+{% extends 'layout/app.html' %}
 
-{% block content%}
-<div class="row justify-content-center">
-    <div class="col-sm-6">
-        <h2 class="text-muted">Login</h2>
-        <form method ="POST" action="{%url 'login'%}">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="{{form.username.id_for_label}}">Username:</label>
-                <input type="text" name="{{form.username.name}}" class="form-control" value="{{form.username.value}}" />
-                <span class="text-danger"> {{form.username.errors}}</span>
+{% block content %}
+<div class="row justify-content-center my-5">
+    <div class="col-md-6 col-sm-8">
+        <div class="card shadow border-0">
+            <div class="card-header bg-dark text-white text-center">
+                <h3 class="mb-0">Login</h3>
             </div>
-            <div class="form-group">
-                <label for="{{form.password.id_for_label}}">Password:</label>
-                <input type="password" name="{{form.password.name}}" class="form-control" value="{{form.password.value}}" />
-                <span class="text-danger"> {{form.password.errors}}</span>
+            <div class="card-body">
+                <form method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                        <input 
+                            type="text" 
+                            name="{{ form.username.name }}" 
+                            id="{{ form.username.id_for_label }}" 
+                            class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                            value="{{ form.username.value }}" 
+                        />
+                        {% if form.username.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.username.errors|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                        <input 
+                            type="password" 
+                            name="{{ form.password.name }}" 
+                            id="{{ form.password.id_for_label }}" 
+                            class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
+                            value="{{ form.password.value }}" 
+                        />
+                        {% if form.password.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.password.errors|join:", " }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button type="submit" class="btn btn-dark">Login</button>
+                        <a href="{% url 'register' %}" class="btn btn-outline-secondary">Register</a>
+                    </div>
+                </form>
             </div>
-            <button type="submit" class="btn btn-dark">Login</button>
-            <a href="{% url 'register'%}" class="btn btn-default">register</a>
-        </form>
+        </div>
     </div>
 </div>
-
-{%endblock%}
+{% endblock %}

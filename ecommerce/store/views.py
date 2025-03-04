@@ -1,11 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render , get_object_or_404
 from django.http import JsonResponse
 import json
 import datetime
-
+from itertools import groupby
 from .models import *
 from .utils import cookieCart , cartData , guestOrder
-
+import random
 # Create your views here.
 def store(request):
     
@@ -14,10 +14,12 @@ def store(request):
 
     products = Product.objects.all()[:50]
     # getting first 50 products which have images
-    print(len(Product.objects.all()))
-    context = {'products' : products , 'cartItems' : cartItems}
-    # print(request.user)
-    return render(request , 'store/store.html' , context)
+
+    all_products = list(Product.objects.filter(image__isnull=False))
+    advertised_products = random.sample(all_products, min(len(all_products), 5)) 
+
+    context = {'products' : products , 'cartItems' : cartItems , 'advertised_products': advertised_products }
+    return render(request , 'store/temp_store.html' , context)
 
 def cart(request):
     
@@ -25,7 +27,6 @@ def cart(request):
     items = data['items']
     order = data['order']
     cartItems = data['cartItems']
-
     context = {"items" : items , 'order':order , "cartItems":cartItems}
     return render(request , 'store/cart.html' , context)
 
@@ -126,3 +127,39 @@ def search_product(request):
         return render(request , 'store/searched.html' , {})
 
     
+
+import google.generativeai as genai    
+import faiss
+import pandas as pd
+from .recommendation_functions import recommend
+import re
+def product_detail(request, pk):
+    df = pd.read_csv('/home/siddharth/Desktop/Django_dev/Django_Ecommerce_app/backup/description.csv')
+
+    def create_textual_representation(row):
+        textual_rep = f"""
+            id:{row['id']},
+            ProductName:{row['name']},
+            Brand: {row['Brand']},
+            Category:{row['catgory']},
+            SubCategory:{row['sub_catgory']},
+            Description: {row["description"]}
+
+        """
+        return textual_rep
+
+    df['textual_representation'] = df.apply(create_textual_representation , axis=1)
+    GOOGLE_API_KEY = "AIzaSyDjEhm7Cz4zMrlz292c6pUJEAUw-Geimh0"
+    genai.configure(api_key=GOOGLE_API_KEY)
+    index = faiss.read_index('/home/siddharth/Desktop/Django_dev/Django_Ecommerce_app/recommendation_system/index')
+
+    product = get_object_or_404(Product, pk=pk)
+    print(product.id)
+    # rec = product.name + " "+ product.Brand + " " + product.catgory + " " + product.sub_catgory + " "+ product.description
+    best_matches = recommend(df , product.id , index)
+    recommended_products = []
+    for i in best_matches:
+        match = re.search(r'id:(\d+)', i)
+        prod = Product.objects.get(id=match.group(1))
+        recommended_products.append(prod)
+    return render(request, 'store/product_detail.html', {'product': product , 'recommended_products' : recommended_products })

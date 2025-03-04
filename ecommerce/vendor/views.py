@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login , logout
-
+from  store.models import Product
 
 
 def vendor_register_view(request):
@@ -59,7 +59,8 @@ def vendor_login_view(request):
             messages.error(request, "Please correct the errors below.")
     
     else:
-        form = VendorLoginForm()
+        initial_data = {"email":""}
+        form = VendorLoginForm(initial=initial_data)
 
     return render(request, 'vendor/login.html', {'form': form})
 
@@ -82,7 +83,6 @@ def vendor_logout_view(request):
 
 @login_required
 def product_management(request):
-    # Check if the logged-in user is a vendor
     print(request.user)
     try:
         vendor = Vendor.objects.get(email=request.user)  # Adjust field as needed
@@ -90,13 +90,12 @@ def product_management(request):
     except Vendor.DoesNotExist:
         return render(request, "vendor/404.html")  # Redirect if the user is not a vendor
 
-    # Handle form submission to add a product
     if request.method == "POST":
         # You could add code here to handle form submission for adding products
         pass
     
     # Render the template with the vendor's products
-    products = vendor.products.all()
+    products = Product.objects.filter(vendor = vendor)[:50]
     context = {
         "vendor": vendor,
         "products": products,

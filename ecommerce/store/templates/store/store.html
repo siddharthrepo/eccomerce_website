@@ -1,18 +1,31 @@
 {% extends 'store/main.html' %}
-{% load static %}
 {% block content %}
-   <div class="row">
-    {%for product in products%}
-        <div class="col-lg-4">
-            <img class="thumbnail" src="{{product.imageURL}}" alt="">
-            <div class="box-element product">
-                <h6><strong>{{product.name}}</strong></h6>
-                <hr>
-                <button data-product="{{product.id}}" data-action="add" class="btn btn-outline-secondary add-btn update-cart">Add To Cart</button>
-                <a class="btn btn-outline-success" href="#">View</a>
-                <h4 style="display: inline-block;float: right">{{product.price|floatformat:2}}</h4>
-            </div>
-        </div>
-    {% endfor %}
+   <div class="container">
+       {% for category, subcategories in grouped_products.items %}
+           <div class="category-box">
+               <h2 class="category-title">{{ category }}</h2>
+               <div class="subcategory-section">
+                   {% for subcategory, products in subcategories.items %}
+                       <div class="subcategory-box">
+                           <h4 class="subcategory-title">{{ subcategory }}</h4>
+                           <div class="row">
+                               {% for product in products %}
+                                   <div class="col-lg-4">
+                                       <img class="thumbnail" src="{{ product.imageURL }}" alt="">
+                                       <div class="box-element product">
+                                           <h6><strong>{{ product.name }}</strong></h6>
+                                           <hr>
+                                           <button data-product="{{ product.id }}" data-action="add" class="btn btn-outline-secondary add-btn update-cart">Add To Cart</button>
+                                           <a class="btn btn-outline-success" href="{% url 'product-detail' product.id %}">View</a>
+                                           <h4 style="display: inline-block;float: right">{{ product.price|floatformat:2 }}</h4>
+                                       </div>
+                                   </div>
+                               {% endfor %}
+                           </div>
+                       </div>
+                   {% endfor %}
+               </div>
+           </div>
+       {% endfor %}
+   </div>
 {% endblock content %}
-

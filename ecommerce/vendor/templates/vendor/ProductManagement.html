@@ -1,10 +1,28 @@
 {% extends 'vendorLayout/app.html' %}
-
+{% load static %}
 {% block content %}
-
-
-        
-
-
+<div class="row">
+    {% for product in products %}
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <img class="card-img-top thumbnail" src="{{ product.imageURL }}" alt="Product Image">
+                <div class="card-body text-center">
+                    <h5 class="card-title"><strong>{{ product.name }}</strong></h5>
+                    <p class="card-text"><strong>Price:</strong>{{ product.price|floatformat:2 }}</p>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button 
+                            data-product="{{ product.id }}" 
+                            data-action="add" 
+                            class="btn btn-outline-secondary add-btn update-cart">
+                            <!-- Add To Cart -->
+                            Inventory
+                        </button>
+                        <a class="btn btn-outline-success" href="#">View</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
 
 {% endblock %}
