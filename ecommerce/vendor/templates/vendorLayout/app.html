@@ -48,14 +48,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="inventory-link" href="">
-                                <i class="bi bi-clipboard-data"></i> Inventory
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="orders-link" href="#">
+                            {% if vendor.id %}
+                            <a class="nav-link" id="orders-link" href="{%url 'vendor_orders' vendor.id%}">
                                 <i class="bi bi-cart"></i> Orders
                             </a>
+                            {%endif%}
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="profile-link" href="#">

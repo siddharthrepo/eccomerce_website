@@ -37,7 +37,12 @@ class Product(models.Model):
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL , null=True , blank=True)
     date_ordered = models.DateTimeField(auto_now_add=True)
-    complete = models.BooleanField(default=False)
+    STATUS = (
+        ('Pending' , 'Pending'),
+        ('Out for delivery' , 'out for Delivery'),
+        ('Delivered' , "Delivered"),
+    )
+    status = models.CharField(max_length=200 , null=True,default='Pending', choices= STATUS)
     transactions_id = models.CharField(max_length=100 , null=True)
     
     def __int__(self):

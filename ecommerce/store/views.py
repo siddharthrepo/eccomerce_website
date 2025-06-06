@@ -22,12 +22,13 @@ def store(request):
     return render(request , 'store/temp_store.html' , context)
 
 def cart(request):
-    
+
     data = cartData(request)
     items = data['items']
     order = data['order']
     cartItems = data['cartItems']
     context = {"items" : items , 'order':order , "cartItems":cartItems}
+
     return render(request , 'store/cart.html' , context)
 
 def checkout(request):
@@ -41,81 +42,90 @@ def checkout(request):
    
     return render(request , 'store/checkout.html' , context)
 
+from django.http import JsonResponse
+import json
+from .models import Product, Order, OrderItem
+
 def updateItem(request):
     data = json.loads(request.body)
-    print(data)
-    productId = data['productId']
+    product_id = data['productId']
     action = data['action']
-    print("Action :" , action)
-    print("productid :" , productId)
+    customer = request.user.customer
 
-    customer = request.user.customer 
-    product = Product.objects.get(id = productId)
-    order, created = Order.objects.get_or_create(customer= customer , complete = False)
+    print("action",action)
+    print("product_id",product_id)
 
-    orderItem, created = OrderItem.objects.get_or_create(order=order , product=product)
+    # ✅ Always fetch the correct active cart
+    order = Order.objects.filter(customer=customer, status="Pending").order_by('-date_ordered').first()
 
-    if action == 'add':
-        orderItem.quantity = (orderItem.quantity + 1)
+    if not order:
+        order = Order.objects.create(customer=customer, status="Pending")
+
+    product = Product.objects.get(id=product_id)
+    orderItem, created = OrderItem.objects.get_or_create(order=order, product=product)
+
+    if action == "add":
+        orderItem.quantity += 1
     elif action == "remove":
-        orderItem.quantity = (orderItem.quantity - 1)
+        orderItem.quantity -= 1
 
     orderItem.save()
 
     if orderItem.quantity <= 0:
         orderItem.delete()
 
-    return JsonResponse('item was added' , safe=False)
+    return JsonResponse("Item updated successfully", safe=False)
+
 
 
 # in incognito mode csrf token is not generated , a quick fix for that is 
 # from django.views.decorators.csrf import csrf_exempt
 
 # @csrf_exempt
+from django.http import JsonResponse
+import datetime
+import json
+from .models import Order, OrderItem, Product, ShippingAddress
+
 def processOrder(request):
     transaction_id = datetime.datetime.now().timestamp()
     data = json.loads(request.body)
 
     if request.user.is_authenticated:
         customer = request.user.customer
-        order , created = Order.objects.get_or_create(customer=customer , complete=False)
-        
-        if order.shipping == True:
-            ShippingAddress.objects.create(
-                customer = customer,
-                order =order,
-                address = data['shipping']['address'],
-                city = data['shipping']['city'],
-                state = data['shipping']['state'],
-                zipcode = data['shipping']['zipcode'],
-            )
+        # Fetch only the latest "Pending" order
+        order = Order.objects.filter(customer=customer, status="Pending").order_by('-date_ordered').first()
+
+        if not order:
+            return JsonResponse({"error": "No active order found!"}, status=400)
+
+        order.transaction_id = transaction_id
+
+        # Check if the total matches
+        total = float(data['form']['total'])
+        if total == order.get_cart_total:
+            order.complete = True
+            order.status = "Delivered"  # Mark order as completed
+            order.save()
+
+            # Reduce stock for each ordered item
+            order_items = order.orderitem_set.all()
+            for item in order_items:
+                product = item.product
+                if product.inventory >= item.quantity:
+                    product.inventory -= item.quantity  # Reduce stock
+                    product.save()
+                else:
+                    return JsonResponse({"error": f"Not enough stock for {product.name}"}, status=400)
+
+            # ✅ **Create a fresh order after checkout**
+            new_order = Order.objects.create(customer=customer, status="Pending")
+
     else:
-        customer, order = guestOrder(data , request)
-        
-    total = float(data['form']['total'])
-    order.transaction_id = transaction_id
+        customer, order = guestOrder(data, request)
 
-    if total == order.get_cart_total:
-        order.complete = True
-    order.save()
+    return JsonResponse("Payment complete! Cart is now empty.", safe=False)
 
-    return JsonResponse('Payment complete !:' , safe=False)
-
-
-def send_total_to_cart(request):
-    if request.user.is_authenticated:
-        try:
-            customer = request.user.customer
-            order, created = Order.objects.get_or_create(customer=customer , complete=False)
-            cartItems = order.get_cart_items  
-        except Exception as e:
-            cartItems = 0  
-    else:
-        cookieData = cookieCart(request)
-        cartItems =  cookieData['cartItems']
-        
-    context = {'cartItems':cartItems }
-    return JsonResponse(context)
 
 
 def search_product(request):

@@ -1,0 +1,16 @@
+{% extends 'vendorLayout/app.html' %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <h2>Update Inventory for {{ product.name }}</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="inventory" class="form-label">New Inventory</label>
+            <input type="number" class="form-control" id="inventory" name="inventory" value="{{ product.inventory }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a href="{% url 'product_management' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'vendorLayout/app.html' %}
+{% block content %}
+<h2>Order Detail</h2>
+<p>Order ID: {{ order.id }}</p>
+<p>Status: {{ order.status }}</p>
+<ul>
+    {% for item in order.order_items.all %}
+    <li>{{ item.product.name }} - Quantity: {{ item.quantity }} - Price: {{ item.price }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}
