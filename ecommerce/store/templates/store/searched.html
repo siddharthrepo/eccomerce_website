@@ -3,9 +3,11 @@
 
 {%block content%}   
 <div class="row">
-    {%if searched%}
-        you searched for "{{searched}}"
-    {%endif%}
+    {%comment%}
+        {%if searched%}
+            you searched for "{{searched}}"
+        {%endif%}
+    {%endcomment%}
     {%for product in products%}
         <div class="col-lg-4">
             <img class="thumbnail" src="{{product.imageURL}}" alt="">
@@ -14,7 +16,14 @@
                 <hr>
                 <button data-product="{{product.id}}" data-action="add" class="btn btn-outline-secondary add-btn update-cart">Add To Cart</button>
                 <a class="btn btn-outline-success" href="{% url 'product-detail' product.id %}">View</a>
-                <h4 style="display: inline-block;float: right">{{product.price|floatformat:2}}</h4>
+                <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    {% if product.discounted_price %}
+                        <span style="text-decoration: line-through; color: #888; font-size: 1rem;">₹{{ product.price|floatformat:2 }}</span>
+                        <span style="color: #d32f2f; font-weight: bold; font-size: 1.1rem;">₹{{ product.discounted_price|floatformat:2 }}</span>
+                    {% else %}
+                        <span style="font-size: 1.1rem;">₹{{ product.price|floatformat:2 }}</span>
+                    {% endif %}
+                </div>
             </div>
         </div>
     {% endfor %}

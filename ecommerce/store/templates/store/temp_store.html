@@ -10,13 +10,12 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ product.name }}</h5>
                     <p class="card-text">
-                        <span class="text-muted" style="text-decoration: line-through;">
-                            {{ product.price|floatformat:2 }}
-                        </span>
-                        <br>
-                        <span class="text-success ms-2">
-                            {{ product.discounted_price|floatformat:2 }}
-                        </span>
+                        {% if product.discounted_price %}
+                            <span style="text-decoration: line-through; color: #888;">₹{{ product.price|floatformat:2 }}</span>
+                            <span style="color: #d32f2f; font-weight: bold; margin-left: 8px;">₹{{ product.discounted_price|floatformat:2 }}</span>
+                        {% else %}
+                            ₹{{ product.price|floatformat:2 }}
+                        {% endif %}
                     </p>
                 </div>
                 <div class="card-footer d-flex justify-content-between align-items-center">

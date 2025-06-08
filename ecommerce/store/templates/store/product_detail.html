@@ -11,7 +11,14 @@
             <h2 class="mb-4">{{ product.name }}</h2>
             <p class="text-muted"><strong>Description:</strong></p>
             <p class="lead">{{ product.description }}</p>
-            <h4 class="text-success mb-4"><strong>Price:</strong> {{ product.price|floatformat:2 }}</h4>
+            <h4 class="text-success mb-4"><strong>Price:</strong>
+                {% if product.discounted_price %}
+                    <span style="text-decoration: line-through; color: #888;">₹{{ product.price|floatformat:2 }}</span>
+                    <span style="color: #d32f2f; font-weight: bold; margin-left: 8px;">₹{{ product.discounted_price|floatformat:2 }}</span>
+                {% else %}
+                    ₹{{ product.price|floatformat:2 }}
+                {% endif %}
+            </h4>
             <button data-product="{{ product.id }}" data-action="add" class="btn btn-lg btn-outline-primary add-btn update-cart">Add to Cart</button>
         </div>
     </div>
@@ -27,7 +34,14 @@
                 <img src="{{ rec_product.imageURL }}" class="card-img-top" alt="{{ rec_product.name }}">
                 <div class="card-body text-center">
                     <h5 class="card-title">{{ rec_product.name }}</h5>
-                    <p class="card-text text-success"><strong>{{ rec_product.price|floatformat:2 }}</strong></p>
+                    <p class="card-text text-success"><strong>
+                        {% if rec_product.discounted_price %}
+                            <span style="text-decoration: line-through; color: #888;">₹{{ rec_product.price|floatformat:2 }}</span>
+                            <span style="color: #d32f2f; font-weight: bold; margin-left: 8px;">₹{{ rec_product.discounted_price|floatformat:2 }}</span>
+                        {% else %}
+                            ₹{{ rec_product.price|floatformat:2 }}
+                        {% endif %}
+                    </strong></p>
                     <a class="btn btn-outline-success" href="{% url 'product-detail' rec_product.id %}">View</a>
                     <button data-product="{{ rec_product.id }}" data-action="add" class="btn btn-sm btn-outline-primary add-btn update-cart">Add to Cart</button>
                 </div>

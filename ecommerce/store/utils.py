@@ -35,18 +35,24 @@ def cookieCart(request):
     return {"items" : items , 'order':order , "cartItems":cartItems}
 
 def cartData(request):
-    if request.user.is_authenticated:
+    if request.user.is_authenticated:  
         try:
             customer = request.user.customer
-            order, created = Order.objects.get_or_create(customer=customer , complete=False)
-            items = order.orderitem_set.all()
-            cartItems = order.get_cart_items 
-        except Exception:
-            # if vendor logs in the main store page
-            order = 0
-            items = 0
-            cartItems = 0
+            order = Order.objects.filter(customer=customer, status="Pending").order_by('-date_ordered').first()
 
+            if order:
+                items = order.orderitem_set.all()
+                cartItems = order.get_cart_items 
+            else:
+                order = Order.objects.create(customer=customer, status="Pending")
+                items = []
+                cartItems = 0 
+        except Exception as e:
+            # if vendor logs in the main store page
+            print('ran into exception' , e )
+            order = 0
+            items = 0   
+            cartItems = 0
     else:
         cookieData = cookieCart(request)
         items = cookieData['items']

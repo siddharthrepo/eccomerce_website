@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor CRM - Orders Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4CAF50;
+            --danger-color: #e63946;
+            --warning-color: #ff9f1c;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fb;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: white;
+            box-shadow: var(--shadow);
+            padding: 1rem 0;
+            position: fixed;
+            top: 70px;
+            bottom: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: block;
+            padding: 0.8rem 1.5rem;
+            color: #555;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: #f0f4ff;
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .sidebar-menu i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            margin-top: 70px;
+            padding: 2rem;
+            display: flex;
+            gap: 2rem;
+        }
+
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+
+        .customers-section {
+            flex: 1;
+            max-width: 40%;
+        }
+
+        .orders-section {
+            flex: 2;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: #f5f7fb;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-box input {
+            border: none;
+            background: transparent;
+            padding: 0.5rem;
+            flex: 1;
+            outline: none;
+        }
+
+        .search-box i {
+            color: #777;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: white;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+
+        tbody tr:hover {
+            background-color: #f5f7fb;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #3d8b40;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        /* Order Cards */
+        .order-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .order-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .order-id {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .order-customer {
+            font-weight: 500;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .order-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            background-color: #f0f4ff;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .status-label {
+            font-weight: 500;
+        }
+
+        .status-value {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-delivery {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-delivered {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-form {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-form select {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #777;
+            display: none;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #ddd;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .customers-section, .orders-section {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            .sidebar-menu a span {
+                display: none;
+            }
+            .sidebar-menu i {
+                margin-right: 0;
+                font-size: 1.2rem;
+            }
+            .main-content {
+                margin-left: 70px;
+            }
+        }
+
+        .active-customer {
+            background-color: #f0f4ff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Vendor CRM</h1>
+        <div class="user-info">
+            <span id="vendor-name">Loading...</span>
+            <img src="/placeholder.svg?height=40&width=40" alt="Vendor Profile">
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active"><i class="fas fa-shopping-cart"></i> <span>Orders</span></a></li>
+                <li><a href="#"><i class="fas fa-box"></i> <span>Products</span></a></li>
+                <li><a href="#"><i class="fas fa-chart-line"></i> <span>Analytics</span></a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+                <li><a href="#"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                <li>his page currently works only for vendor shivansh since vendor_id is hardcoded</li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Customers Section -->
+            <div class="section customers-section">
+                <div class="section-header">
+                    <h2 class="section-title">Customers</h2>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="customerSearch" placeholder="Search customers...">
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Orders</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersTable">
+                        <!-- Customers will be populated here -->
+                    </tbody>
+                </table>
+                <div id="customersEmptyState" class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <p>No customers found</p>
+                </div>
+            </div>
+
+            <!-- Orders Section -->
+            <div class="section orders-section">
+                <div class="section-header">
+                    <h2 class="section-title">Orders</h2>
+                    <div>
+                        <select id="statusFilter">
+                            <option value="all">All Statuses</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Out for delivery">Out for delivery</option>
+                            <option value="Delivered">Delivered</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="orderSearch" placeholder="Search orders...">
+                </div>
+                <div id="ordersList" class="order-cards">
+                    <!-- Orders will be populated here -->
+                </div>
+                <div id="ordersEmptyState" class="empty-state">
+                    <i class="fas fa-shopping-cart"></i>
+                    <p>No orders found</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let vendorData = {
+            vendor: { vendor_name: "Loading..." },
+            ordered_items: []
+        };
+        
+        // Get vendor ID from URL or set a default
+        const urlParams = new URLSearchParams(window.location.search);
+        const vendorId = urlParams.get('vendor_id') || '0c1cb756-8c24-4ed8-9bf1-833e06f48a2d'; // Default to vendor ID 1 if not specified
+        
+        // Fetch data when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchVendorOrders(vendorId);
+        });
+
+        // Fetch vendor orders from the API
+        function fetchVendorOrders(vendorId) {
+            // Show loading state
+            document.getElementById('vendor-name').textContent = 'Loading...';
+            document.getElementById('customersTable').innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+            document.getElementById('ordersList').innerHTML = '<div class="order-card">Loading orders...</div>';
+            
+            // Fetch data from the API
+            fetch(`/api/vendor-orders/${vendorId}/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    
+                    vendorData = data;
+                    console.log("Raw API Response:", vendorData.ordered_items);
+
+                    // Update vendor name in the header
+                    document.getElementById('vendor-name').textContent = vendorData.vendor;
+                    // Process and display the data
+                    processAndDisplayData(vendorData);
+                })
+                .catch(error => {
+                    console.error('Error fetching vendor orders:', error);
+                    document.getElementById('customersTable').innerHTML = 
+                        '<tr><td colspan="3">Error loading data. Please try again.</td></tr>';
+                    document.getElementById('ordersList').innerHTML = 
+                        '<div class="order-card">Error loading orders. Please try again.</div>';
+                });
+        }
+
+        // Process and display the data
+        function processAndDisplayData(vendorData) {
+            // Process data to group by customers and orders
+            const customers = {};
+            const orders = {};
+        
+            vendorData.ordered_items.forEach(item => {
+                const customerName = item.customer_name || "Unknown Customer";
+                const orderId = item.order_id || "Unknown Order";
+        
+                // Group by customer
+                if (!customers[customerName]) {
+                    customers[customerName] = {
+                        name: customerName,
+                        orderCount: 0,
+                        orderIds: new Set()
+                    };
+                }
+        
+                if (orderId !== "Unknown Order") {
+                    customers[customerName].orderIds.add(orderId);
+                    customers[customerName].orderCount = customers[customerName].orderIds.size;
+                }
+        
+                // Group by order
+                if (!orders[orderId]) {
+                    orders[orderId] = {
+                        id: orderId,
+                        customer_name: customerName,
+                        status: item.order_status || "Pending",
+                        items: []
+                    };
+                }
+        
+                // Append items to the order
+                orders[orderId].items.push({
+                    id: item.id,
+                    product_name: item.product_name,
+                    quantity: item.quantity,
+                    date_added: item.date_added
+                });
+            });
+        
+            // Convert customer order IDs from Set to Array
+            Object.values(customers).forEach(customer => {
+                customer.orderIds = Array.from(customer.orderIds);
+                console.log(`Customer: ${customer.name}, Orders:`, Array.from(customer.orderIds));
+            });
+        
+            // Debugging Logs
+            console.log("Processed Customers Object:", customers);
+            console.log("Processed Orders Object:", orders);
+        
+            // Display customers
+            displayCustomers(customers);
+        
+            // Display orders
+            displayOrders(orders);
+        
+            // Set up event listeners
+            setupEventListeners(customers, orders);
+        }
+        
+
+        // Display customers in the table
+        function displayCustomers(customers) {
+            const customersTable = document.getElementById('customersTable');
+            const customersEmptyState = document.getElementById('customersEmptyState');
+            
+            customersTable.innerHTML = '';
+            
+            const customerArray = Object.values(customers);
+            
+            if (customerArray.length === 0) {
+                customersEmptyState.style.display = 'block';
+                return;
+            }
+            
+            customersEmptyState.style.display = 'none';
+            
+            customerArray.forEach(customer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${customer.name}</td>
+                    <td>${customer.orderCount}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm view-customer" data-customer="${customer.name}">View</button>
+                    </td>
+                `;
+                customersTable.appendChild(row);
+            });
+        }
+
+        // Display orders in the order cards section
+        function displayOrders(orders, filterCustomer = null, filterStatus = 'all') {
+            const ordersList = document.getElementById('ordersList');
+            const ordersEmptyState = document.getElementById('ordersEmptyState');
+            
+            ordersList.innerHTML = '';
+            
+            let orderArray = Object.values(orders);
+            
+            // Apply filters
+            if (filterCustomer) {
+                orderArray = orderArray.filter(order => order.customer_name === filterCustomer);
+                console.log("order_array"+orderArray)
+            }
+            
+            if (filterStatus !== 'all') {
+                orderArray = orderArray.filter(order => order.status === filterStatus);
+            }
+            
+            // Apply search filter if exists
+            const searchTerm = document.getElementById('orderSearch').value.toLowerCase();
+            if (searchTerm) {
+                orderArray = orderArray.filter(order => 
+                    order.customer_name.toLowerCase().includes(searchTerm) || 
+                    order.id.toString().includes(searchTerm) ||
+                    order.items.some(item => item.product_name.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            if (orderArray.length === 0) {
+                ordersEmptyState.style.display = 'block';
+                return;
+            }
+            
+            ordersEmptyState.style.display = 'none';
+            
+            orderArray.forEach(order => {
+                const orderCard = document.createElement('div');
+                orderCard.className = 'order-card';
+                orderCard.id = `order-${order.id}`;
+                
+                // Create order header
+                const orderHeader = document.createElement('div');
+                orderHeader.className = 'order-header';
+                orderHeader.innerHTML = `
+                    <div>
+                        <div class="order-id">Order #${order.id}</div>
+                        <div class="order-customer">Customer: ${order.customer_name}</div>
+                    </div>
+                    <div class="order-actions">
+                        <button class="btn btn-primary btn-sm update-order" data-order-id="${order.id}">Update</button>
+                    </div>
+                `;
+                
+                // Create order status section
+                const orderStatus = document.createElement('div');
+                orderStatus.className = 'order-status';
+                
+                let statusClass = '';
+                if (order.status === 'Pending') statusClass = 'status-pending';
+                else if (order.status === 'Out for delivery') statusClass = 'status-delivery';
+                else if (order.status === 'Delivered') statusClass = 'status-delivered';
+                
+                orderStatus.innerHTML = `
+                    <div>
+                        <span class="status-label">Status:</span>
+                        <span id="current-status-${order.id}" class="status-value ${statusClass}">${order.status}</span>
+                    </div>
+                    <form class="status-form" onsubmit="event.preventDefault(); updateStatus(${order.id});">
+                        <select id="status-${order.id}">
+                            <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Out for delivery" ${order.status === 'Out for delivery' ? 'selected' : ''}>Out for delivery</option>
+                            <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                        </select>
+                        <button type="submit" class="btn btn-success btn-sm">Update</button>
+                    </form>
+                `;
+                
+                // Create order items table
+                const orderItems = document.createElement('table');
+                orderItems.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Quantity</th>
+                            <th>Date Added</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${order.items.map(item => `
+                            <tr>
+                                <td>${item.product_name}</td>
+                                <td>${item.quantity}</td>
+                                <td>${item.date_added}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                
+                // Append all sections to the order card
+                orderCard.appendChild(orderHeader);
+                orderCard.appendChild(orderStatus);
+                orderCard.appendChild(orderItems);
+                
+                // Add the order card to the orders list
+                ordersList.appendChild(orderCard);
+            });
+        }
+
+        // Set up event listeners for interactive elements
+        function setupEventListeners(customers, orders) {
+            // Customer search
+            document.getElementById('customerSearch').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredCustomers = {};
+                
+                Object.values(customers).forEach(customer => {
+                    if (customer.name.toLowerCase().includes(searchTerm)) {
+                        filteredCustomers[customer.name] = customer;
+                    }
+                });
+                
+                displayCustomers(filteredCustomers);
+            });
+            
+            // Order search
+            document.getElementById('orderSearch').addEventListener('input', function() {
+                const filterCustomer = document.querySelector('.view-customer.active')?.dataset.customer || null;
+                const filterStatus = document.getElementById('statusFilter').value;
+                displayOrders(orders, filterCustomer, filterStatus);
+            });
+            
+            // Status filter
+            document.getElementById('statusFilter').addEventListener('change', function() {
+                const filterCustomer = document.querySelector('.view-customer.active')?.dataset.customer || null;
+                const filterStatus = this.value;
+                displayOrders(orders, filterCustomer, filterStatus);
+            });
+            
+            // View customer button clicks
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('view-customer')) {
+                    // Remove active class from all view buttons
+                    document.querySelectorAll('.view-customer').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked button
+                    e.target.classList.add('active');
+                    
+                    // Highlight the selected customer row
+                    document.querySelectorAll('#customersTable tr').forEach(row => {
+                        row.classList.remove('active-customer');
+                    });
+                    e.target.closest('tr').classList.add('active-customer');
+                    
+                    const customerName = e.target.dataset.customer;
+                    const filterStatus = document.getElementById('statusFilter').value;
+                    displayOrders(orders, customerName, filterStatus);
+                }
+            });
+            
+            // Update order button clicks
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('update-order')) {
+                    const orderId = e.target.dataset.orderId;
+                    // Focus on the status dropdown for the order
+                    document.getElementById(`status-${orderId}`).focus();
+                }
+            });
+        }
+
+        // Update order status
+        function updateStatus(orderId) {
+            const statusSelect = document.getElementById(`status-${orderId}`);
+            const status = statusSelect.value;
+            const csrfToken = getCookie('csrftoken'); // Function to get CSRF token
+            
+            // Show updating state
+            const statusElement = document.getElementById(`current-status-${orderId}`);
+            statusElement.innerText = 'Updating...';
+            
+            // Send update request to the server
+            fetch(`/api/update-order-status/${orderId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ status: status })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Update the UI
+                statusElement.innerText = status;
+                
+                // Update status class
+                statusElement.className = 'status-value';
+                if (status === 'Pending') statusElement.classList.add('status-pending');
+                else if (status === 'Out for delivery') statusElement.classList.add('status-delivery');
+                else if (status === 'Delivered') statusElement.classList.add('status-delivered');
+                
+                // Update the data in our local state
+                vendorData.ordered_items.forEach(item => {
+                    if (item.order_id == orderId) {
+                        item.order_status = status;
+                    }
+                });
+                
+                // Show success message
+                alert('Order status updated successfully!');
+            })
+            .catch(error => {
+                console.error('Error updating order status:', error);
+                // Revert to previous status
+                statusElement.innerText = statusSelect.options[statusSelect.selectedIndex].text;
+                alert('Failed to update order status. Please try again.');
+            });
+        }
+
+        // Helper function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

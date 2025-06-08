@@ -1,0 +1,18 @@
+{% extends 'vendorLayout/app.html' %}
+{% block content %}
+<h2>Order Detail</h2>
+<p>Order ID: {{ order.id }}</p>
+<p>Status: {{ order.status }}</p>
+<ul>
+    {% for item in order.order_items.all %}
+    <li>{{ item.product.name }} - Quantity: {{ item.quantity }} -
+        {% if item.product.discounted_price %}
+            <span style="text-decoration: line-through; color: #888;">Price: {{ item.price }}</span>
+            <span style="color: #d32f2f; font-weight: bold; margin-left: 8px;">Discounted: {{ item.product.discounted_price }}</span>
+        {% else %}
+            Price: {{ item.price }}
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -1,28 +1,571 @@
 {% extends 'vendorLayout/app.html' %}
 {% load static %}
+
 {% block content %}
-<div class="row">
-    {% for product in products %}
-        <div class="col-lg-4 mb-4">
-            <div class="card h-100">
-                <img class="card-img-top thumbnail" src="{{ product.imageURL }}" alt="Product Image">
-                <div class="card-body text-center">
-                    <h5 class="card-title"><strong>{{ product.name }}</strong></h5>
-                    <p class="card-text"><strong>Price:</strong>{{ product.price|floatformat:2 }}</p>
-                    <div class="d-flex justify-content-between mt-3">
-                        <button 
-                            data-product="{{ product.id }}" 
-                            data-action="add" 
-                            class="btn btn-outline-secondary add-btn update-cart">
-                            <!-- Add To Cart -->
-                            Inventory
-                        </button>
-                        <a class="btn btn-outline-success" href="#">View</a>
-                    </div>
+<div class="vendor-products-page">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>Product Inventory Management</h1>
+        <div class="header-actions">
+            <button class="btn btn-primary" onclick="location.href='{% url 'add_product' %}'">
+                <i class="fas fa-plus"></i> Add New Product
+            </button>
+            <button class="btn btn-secondary" onclick="exportToCSV()">
+                <i class="fas fa-file-export"></i> Export Inventory
+            </button>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="search-filter-container">
+        <form method="GET" action="{% url 'product_management' %}" class="search-form">
+            <!-- Search Input -->
+            <input type="text" name="search" placeholder="Search products..." value="{{ request.GET.search }}">
+            <button type="submit" name="search_button" class="search-button">Search</button>
+    
+            <!-- Category Filter -->
+            <select name="category">
+                <option value="">All Categories</option>
+                <option value="Fruits & Vegetables" {% if request.GET.category == "Fruits & Vegetables" %}selected{% endif %}>Fruits & Vegetables</option>
+                <option value="Eggs, Meat & Fish" {% if request.GET.category == "Eggs, Meat & Fish" %}selected{% endif %}>Eggs, Meat & Fish</option>
+                <option value="Foodgrains, Oil & Masala" {% if request.GET.category == "Foodgrains, Oil & Masala" %}selected{% endif %}>Foodgrains, Oil & Masala</option>
+                <option value="Cleaning & Household" {% if request.GET.category == "Cleaning & Household" %}selected{% endif %}>Cleaning & Household</option>
+                <option value="Beverages" {% if request.GET.category == "Beverages" %}selected{% endif %}>Beverages</option>
+                <option value="Bakery, Cakes & Dairy" {% if request.GET.category == "Bakery, Cakes & Dairy" %}selected{% endif %}>Bakery, Cakes & Dairy</option>
+            </select>
+    
+            <!-- Inventory Filter -->
+            <select name="inventory">
+                <option value="">All Inventory</option>
+                <option value="low" {% if request.GET.inventory == "low" %}selected{% endif %}>Low Stock</option>
+                <option value="out" {% if request.GET.inventory == "out" %}selected{% endif %}>Out of Stock</option>
+            </select>
+    
+            <!-- Apply Filter Button -->
+            <button type="submit" name="filter_button" class="filter-button">Apply Filter</button>
+        </form>
+    </div>
+    
+    
+
+    <!-- Products Grid -->
+    <div class="products-grid" id="productsContainer">
+        {% for product in products %}
+        <div class="product-card" data-product-id="{{ product.id }}">
+            <div class="product-image">
+                <img src="{{ product.imageURL }}" alt="{{ product.name }}">
+            </div>
+            <div class="product-details">
+                <h3 class="product-name">{{ product.name }}</h3>
+                <p class="product-category">{{ product.category }}</p>
+                <p class="product-price">${{ product.price|floatformat:2 }}</p>
+                <p class="product-inventory">
+                    Inventory: <span id="inventory-{{ product.id }}" class="inventory-count">Loading...</span>
+                </p>
+                <div class="product-actions">
+                    <button class="btn btn-sm btn-outline-primary update-inventory" data-product-id="{{ product.id }}">
+                        Update Inventory
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary view-product" onclick="viewProduct({{ product.id }})">
+                        View Details
+                    </button>
                 </div>
             </div>
         </div>
-    {% endfor %}
+        {% empty %}
+        <div class="no-products">
+            <i class="fas fa-box-open"></i>
+            <p>No products found. Start by adding a new product.</p>
+        </div>
+        {% endfor %}
+    </div>
+    <!-- Pagination -->
+    <div class="pagination">
+        {% if products.has_previous %}
+            <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}
+                {% if request.GET.category %}&category={{ request.GET.category }}{% endif %}
+                {% if request.GET.inventory %}&inventory={{ request.GET.inventory }}{% endif %}">First</a>
+            <a href="?page={{ products.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}
+                {% if request.GET.category %}&category={{ request.GET.category }}{% endif %}
+                {% if request.GET.inventory %}&inventory={{ request.GET.inventory }}{% endif %}">Previous</a>
+        {% endif %}
+    
+        <span>Page {{ products.number }} of {{ products.paginator.num_pages }}</span>
+    
+        {% if products.has_next %}
+            <a href="?page={{ products.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}
+                {% if request.GET.category %}&category={{ request.GET.category }}{% endif %}
+                {% if request.GET.inventory %}&inventory={{ request.GET.inventory }}{% endif %}">Next</a>
+            <a href="?page={{ products.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}
+                {% if request.GET.category %}&category={{ request.GET.category }}{% endif %}
+                {% if request.GET.inventory %}&inventory={{ request.GET.inventory }}{% endif %}">Last</a>
+        {% endif %}
+    </div>
+    
+
+    <!-- Inventory Update Modal -->
+    <div class="modal fade" id="inventoryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Inventory</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="inventoryForm">
+                        <div class="mb-3">
+                            <label for="newInventory" class="form-label">New Inventory Count</label>
+                            <input type="number" class="form-control" id="newInventory" required min="0">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveInventory">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<style>
+    .vendor-products-page {
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .search-filter-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .search-box {
+        position: relative;
+        flex: 1;
+        max-width: 300px;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 10px 30px 10px 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+
+    .search-box i {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+
+    .filter-options {
+        display: flex;
+        gap: 10px;
+    }
+
+    .filter-options select {
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .product-card {
+        background-color: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .product-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .product-image {
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .product-details {
+        padding: 15px;
+    }
+
+    .product-name {
+        margin: 0 0 10px 0;
+        font-size: 1.1em;
+    }
+
+    .product-category {
+        color: #6c757d;
+        font-size: 0.9em;
+        margin-bottom: 5px;
+    }
+
+    .product-price {
+        font-weight: bold;
+        color: #28a745;
+        margin-bottom: 10px;
+    }
+
+    .product-inventory {
+        margin-bottom: 15px;
+    }
+
+    .product-actions {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .no-products {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 50px;
+        background-color: white;
+        border-radius: 8px;
+    }
+
+    .no-products i {
+        font-size: 3em;
+        color: #6c757d;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .header-actions {
+            margin-top: 10px;
+        }
+
+        .search-filter-container {
+            flex-direction: column;
+        }
+
+        .search-box {
+            max-width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .filter-options {
+            flex-wrap: wrap;
+        }
+    }
+    .pagination {
+        text-align: center;
+        margin: 20px 0;
+    }
+    
+    .step-links {
+        display: inline-block;
+        padding: 10px;
+        border-radius: 8px;
+        background: #f8f9fa;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .pagination-link {
+        display: inline-block;
+        padding: 8px 12px;
+        margin: 5px;
+        text-decoration: none;
+        font-weight: 600;
+        color: #007bff;
+        border: 1px solid #007bff;
+        border-radius: 5px;
+        transition: all 0.3s ease-in-out;
+    }
+    
+    .pagination-link:hover {
+        background: #007bff;
+        color: #fff;
+    }
+    
+    .current {
+        font-size: 16px;
+        font-weight: bold;
+        margin: 0 10px;
+        color: #333;
+    }
+    .search-filter-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+    
+    /* Search Form Styling */
+    .search-form {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+    
+    /* Search Input */
+    .search-form input[type="text"] {
+        width: 250px;
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    
+    /* Search Button */
+    .search-button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .search-button:hover {
+        background-color: #0056b3;
+    }
+    
+    /* Filter Section */
+    .search-form select {
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        font-size: 14px;
+        background-color: white;
+        cursor: pointer;
+    }
+    
+    /* Filter Button */
+    .filter-button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .filter-button:hover {
+        background-color: #218838;
+    }
+    
+    /* Flexbox Adjustments */
+    .search-form select,
+    .filter-button {
+        margin-left: 10px;
+    }
+    
+    /* Responsive Design */
+    @media screen and (max-width: 768px) {
+        .search-filter-container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+    
+        .search-form {
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+        }
+    
+        .search-form input[type="text"] {
+            width: 100%;
+        }
+    }
+    
+    
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const productSearch = document.getElementById("productSearch");
+        const productsContainer = document.getElementById("productsContainer");
+    
+        productSearch.addEventListener("input", function () {
+            let query = productSearch.value.trim();
+            let url = `/product_management/?search=${encodeURIComponent(query)}`;
+    
+            fetch(url, {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                productsContainer.innerHTML = "";
+                if (data.products.length > 0) {
+                    data.products.forEach(product => {
+                        let productCard = `
+                            <div class="product-card">
+                                <h3>${product.name}</h3>
+                                <p>Category: ${product.category}</p>
+                                <p>Price: $${product.price}</p>
+                                <img src="${product.imageURL}" alt="${product.name}" width="100">
+                            </div>`;
+                        productsContainer.innerHTML += productCard;
+                    });
+                } else {
+                    productsContainer.innerHTML = `<p>No products found.</p>`;
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    });
+    
+    
+document.addEventListener("DOMContentLoaded", function () {
+    const productsContainer = document.getElementById('productsContainer');
+    const productSearch = document.getElementById('productSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const inventoryFilter = document.getElementById('inventoryFilter');
+    const inventoryModal = new bootstrap.Modal(document.getElementById('inventoryModal'));
+    let currentProductId;
+
+    // Fetch and update inventory for all products
+    function updateAllInventory() {
+        document.querySelectorAll("[id^='inventory-']").forEach(span => {
+            let productId = span.id.split("-")[1];
+            updateInventoryDisplay(productId);
+        });
+    }
+
+    // Fetch and update inventory for a single product
+    function updateInventoryDisplay(productId) {
+        fetch(`/product-inventory/${productId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const inventorySpan = document.getElementById(`inventory-${productId}`);
+                inventorySpan.innerText = data.inventory;
+                inventorySpan.classList.remove('text-danger', 'text-warning');
+                if (data.inventory <= 0) {
+                    inventorySpan.classList.add('text-danger');
+                } else if (data.inventory < 10) {
+                    inventorySpan.classList.add('text-warning');
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching inventory:", error);
+                document.getElementById(`inventory-${productId}`).innerText = "Error";
+            });
+    }
+
+    // Initialize inventory display
+    updateAllInventory();
+
+    // Search and filter functionality
+    function filterProducts() {
+        const searchTerm = productSearch.value.toLowerCase();
+        const category = categoryFilter.value.toLowerCase();
+        const inventoryStatus = inventoryFilter.value;
+
+        document.querySelectorAll('.product-card').forEach(card => {
+            const productName = card.querySelector('.product-name').innerText.toLowerCase();
+            const productCategory = card.querySelector('.product-category').innerText.toLowerCase();
+            const inventoryCount = parseInt(card.querySelector('.inventory-count').innerText);
+
+            const matchesSearch = productName.includes(searchTerm);
+            const matchesCategory = category === '' || productCategory === category;
+            const matchesInventory = inventoryStatus === '' || 
+                                     (inventoryStatus === 'low' && inventoryCount > 0 && inventoryCount < 10) ||
+                                     (inventoryStatus === 'out' && inventoryCount <= 0);
+
+            card.style.display = matchesSearch && matchesCategory && matchesInventory ? '' : 'none';
+        });
+    }
+
+    productSearch.addEventListener('input', filterProducts);
+    categoryFilter.addEventListener('change', filterProducts);
+    inventoryFilter.addEventListener('change', filterProducts);
+
+    // Inventory update functionality
+    productsContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('update-inventory')) {
+            currentProductId = e.target.dataset.productId;
+            inventoryModal.show();
+        }
+    });
+
+    document.getElementById('saveInventory').addEventListener('click', function() {
+        const newInventory = document.getElementById('newInventory').value;
+        fetch(`/update-inventory/${currentProductId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ inventory: newInventory })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateInventoryDisplay(currentProductId);
+                inventoryModal.hide();
+            } else {
+                alert('Failed to update inventory');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating inventory');
+        });
+    });
+});
+
+function viewProduct(productId) {
+    // Implement product detail view functionality
+    alert(`View details for product ${productId}`);
+}
+
+function exportToCSV() {
+    // Implement CSV export functionality
+    alert('Exporting inventory to CSV...');
+}
+
+function applyFilters() {
+    let form = document.querySelector(".search-form");
+    
+    // Remove the search input's value so only filters are applied
+    let searchInput = form.querySelector('input[name="search"]');
+    searchInput.value = ""; 
+    
+    form.submit();
+}
+
+</script>
 {% endblock %}

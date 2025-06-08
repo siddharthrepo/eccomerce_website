@@ -1,0 +1,78 @@
+{% extends 'store/main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="category-products-page">
+    
+    <!-- Back Button and Category Header -->
+    <div class="category-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="{% url 'store' %}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Categories
+                </a>
+                <h1 class="category-title">{{ category_name }}</h1>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products by Sub-Category -->
+    <div class="products-section">
+        <div class="container">
+            {% for subcategory, products in grouped_products.items %}
+            <div class="subcategory-section">
+                <div class="subcategory-header">
+                    <h2 class="subcategory-title">{{ subcategory }}</h2>
+                    <span class="product-count">{{ products|length }} products</span>
+                </div>
+                
+                <div class="products-grid">
+                    {% for product in products %}
+                    <div class="product-card">
+                        <div class="product-image-container">
+                            <img src="{{ product.imageURL }}" alt="{{ product.name }}" class="product-image">
+                            {% if product.discounted_price %}
+                            <div class="discount-badge">SALE</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="product-info">
+                            <h3 class="product-name">{{ product.name|truncatechars:40 }}</h3>
+                            {% if product.Brand %}
+                            <p class="product-brand">{{ product.Brand }}</p>
+                            {% endif %}
+                            
+                            <div class="price-section">
+                                {% if product.discounted_price %}
+                                <span class="original-price" style="text-decoration: line-through; color: #888;">₹{{ product.price|floatformat:0 }}</span>
+                                <span class="discounted-price" style="color: #d32f2f; font-weight: bold; margin-left: 8px;">₹{{ product.discounted_price|floatformat:0 }}</span>
+                                {% else %}
+                                    <span class="current-price">₹{{ product.price|floatformat:0 }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="product-actions">
+                                <button data-product="{{ product.id }}" data-action="add" class="btn-add-to-cart update-cart">
+                                    Add to Cart
+                                </button>
+                                <a href="{% url 'product-detail' product.id %}" class="btn-view-product">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-products">
+                <h3>No products found in this category</h3>
+                <p>Please check back later or browse other categories.</p>
+                <a href="{% url 'store' %}" class="btn-back-home">Back to Categories</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock content %}
