@@ -1,0 +1,141 @@
+{% extends 'store/main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="category-sidebar-page">
+    <!-- Header with Back Button and Category Title -->
+    <div class="category-header">
+        <div class="container-fluid">
+            <div class="header-content">
+                <a href="{% url 'store' %}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Categories
+                </a>
+                <h1 class="category-title">{{ category_name }}</h1>
+                {% if current_subcategory %}
+                <span class="subcategory-breadcrumb">/ {{ current_subcategory }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Use flexbox to align sidebar and products area side by side -->
+    <div class="container-fluid">
+        <div class="d-flex flex-row align-items-start" style="gap: 24px;">
+            <!-- Sidebar with Subcategory Icons -->
+            <aside class="sidebar" style="min-width:220px;max-width:300px;">
+                <div class="sidebar-content">
+                    <h3 class="sidebar-title">Subcategories</h3>
+                    <!-- All Products Option -->
+                    <div class="subcategory-item {% if not current_subcategory %}active{% endif %}"
+                         onclick="navigateToAllProducts('{{ category_name|escapejs }}')">
+                        <div class="subcategory-icon">
+                            <i class="fas fa-th-large"></i>
+                        </div>
+                        <div class="subcategory-info">
+                            <h5 class="subcategory-name">All Products</h5>
+                            <p class="subcategory-count">{{ products|length }} items</p>
+                        </div>
+                    </div>
+                    <!-- Subcategory Icons -->
+                    {% for subcategory in subcategories %}
+                    <div class="subcategory-item {% if current_subcategory == subcategory.name %}active{% endif %}"
+                         onclick="navigateToSubcategory('{{ category_name|escapejs }}', '{{ subcategory.name|escapejs }}')">
+                        <div class="subcategory-icon">
+                            <img src="{{ subcategory.image }}" alt="{{ subcategory.name }}" class="subcategory-image">
+                        </div>
+                        <div class="subcategory-info">
+                            <h5 class="subcategory-name">{{ subcategory.name }}</h5>
+                            <p class="subcategory-count">{{ subcategory.product_count }} items</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </aside>
+
+            <!-- Main Products Area -->
+            <main class="products-area flex-grow-1">
+                <div class="products-header">
+                    {% if current_subcategory %}
+                    <h2 class="products-title">{{ current_subcategory }} Products</h2>
+                    {% else %}
+                    <h2 class="products-title">All {{ category_name }} Products</h2>
+                    {% endif %}
+                    <span class="products-count">{{ products|length }} products found</span>
+                </div>
+                {% if products %}
+                <div class="products-grid">
+                    {% for product in products %}
+                    <div class="product-card">
+                        <div class="product-image-container">
+                            <img src="{{ product.imageURL }}" alt="{{ product.name }}" class="product-image">
+                            {% if product.discounted_price %}
+                            <div class="discount-badge">SALE</div>
+                            {% endif %}
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-name">{{ product.name|truncatechars:40 }}</h3>
+                            {% if product.Brand %}
+                            <p class="product-brand">{{ product.Brand }}</p>
+                            {% endif %}
+                            <div class="price-section">
+                                {% if product.discounted_price %}
+                                    <span class="original-price">₹{{ product.price|floatformat:0 }}</span>
+                                    <span class="discounted-price">₹{{ product.discounted_price|floatformat:0 }}</span>
+                                {% else %}
+                                    <span class="current-price">₹{{ product.price|floatformat:0 }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="product-actions">
+                                <button data-product="{{ product.id }}" data-action="add" class="btn-add-to-cart update-cart">
+                                    Add to Cart
+                                </button>
+                                <a href="{% url 'product-detail' product.id %}" class="btn-view-product">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-products">
+                    <div class="no-products-icon">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <h3>No products found</h3>
+                    {% if current_subcategory %}
+                    <p>No products available in {{ current_subcategory }} subcategory.</p>
+                    <a href="{% url 'category_products' category_name %}" class="btn-view-all">View All {{ category_name }} Products</a>
+                    {% else %}
+                    <p>No products available in this category.</p>
+                    <a href="{% url 'store' %}" class="btn-back-home">Back to Categories</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </main>
+        </div>
+    </div>
+</div>
+
+<script>
+function navigateToSubcategory(categoryName, subcategoryName) {
+    try {
+        // URL encode the category and subcategory names to handle spaces and special characters
+        const encodedCategory = encodeURIComponent(categoryName);
+        const encodedSubcategory = encodeURIComponent(subcategoryName);
+
+        // Create the URL
+        const url = `/category/${encodedCategory}/${encodedSubcategory}/`;
+
+        // Navigate to the subcategory URL
+        window.location.href = url;
+    } catch (error) {
+        alert('Error navigating to subcategory. Please try again.');
+    }
+}
+function navigateToAllProducts(categoryName) {
+    const encodedCategory = encodeURIComponent(categoryName);
+    window.location.href = `/category/${encodedCategory}/`;
+}
+</script>
+{% endblock content %}

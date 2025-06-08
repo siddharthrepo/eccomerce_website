@@ -8,18 +8,77 @@ from .utils import cookieCart , cartData , guestOrder
 import random
 # Create your views here.
 def store(request):
-    
+
     data = cartData(request)
     cartItems = data['cartItems']
 
-    products = Product.objects.all()[:50]
-    # getting first 50 products which have images
-
+    # Get featured/advertised products for carousel
     all_products = list(Product.objects.filter(image__isnull=False))
-    advertised_products = random.sample(all_products, min(len(all_products), 5)) 
+    advertised_products = random.sample(all_products, min(len(all_products), 5))
 
-    context = {'products' : products , 'cartItems' : cartItems , 'advertised_products': advertised_products }
-    return render(request , 'store/temp_store.html' , context)
+    # Get unique categories for the category icons grid
+    categories = Product.objects.filter(catgory__isnull=False).values_list('catgory', flat=True).distinct()
+
+    # Create category data with sample product image for icon
+    category_data = []
+    for category in categories:
+        sample_product = Product.objects.filter(catgory=category, image__isnull=False).first()
+        if sample_product:
+            category_data.append({
+                'name': category,
+                'image': sample_product.imageURL,
+                'product_count': Product.objects.filter(catgory=category).count()
+            })
+
+    context = {
+        'cartItems': cartItems,
+        'advertised_products': advertised_products,
+        'categories': category_data
+    }
+    return render(request, 'store/simple_homepage.html', context)
+
+def category_products(request, category_name, subcategory_name=None):
+    from urllib.parse import unquote
+
+    data = cartData(request)
+    cartItems = data['cartItems']
+
+    # URL decode the parameters to handle spaces and special characters
+    category_name = unquote(category_name)
+    if subcategory_name:
+        subcategory_name = unquote(subcategory_name)
+
+    # Get all subcategories for the sidebar
+    subcategories = Product.objects.filter(catgory=category_name, sub_catgory__isnull=False).values_list('sub_catgory', flat=True).distinct()
+
+    # Create subcategory data with sample product image for icon
+    subcategory_data = []
+    for subcategory in subcategories:
+        sample_product = Product.objects.filter(catgory=category_name, sub_catgory=subcategory, image__isnull=False).first()
+        if sample_product:
+            subcategory_data.append({
+                'name': subcategory,
+                'image': sample_product.imageURL,
+                'product_count': Product.objects.filter(catgory=category_name, sub_catgory=subcategory).count()
+            })
+
+    # Filter products based on subcategory if specified
+    if subcategory_name:
+        products = Product.objects.filter(catgory=category_name, sub_catgory=subcategory_name, image__isnull=False).order_by('name')
+        current_subcategory = subcategory_name
+    else:
+        # Show all products if no subcategory specified
+        products = Product.objects.filter(catgory=category_name, image__isnull=False).order_by('sub_catgory', 'name')
+        current_subcategory = None
+
+    context = {
+        'category_name': category_name,
+        'current_subcategory': current_subcategory,
+        'subcategories': subcategory_data,
+        'products': products,
+        'cartItems': cartItems
+    }
+    return render(request, 'store/category_products_sidebar.html', context)
 
 def cart(request):
 

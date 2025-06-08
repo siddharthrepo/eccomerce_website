@@ -1,0 +1,98 @@
+{% extends 'store/main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="simple-homepage">
+    
+    <!-- Advertised Products Carousel -->
+    {% if advertised_products %}
+    <div class="carousel-section">
+        <div id="productCarousel" class="carousel slide" data-ride="carousel">
+            <ol class="carousel-indicators">
+                {% for product in advertised_products %}
+                <li data-target="#productCarousel" data-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></li>
+                {% endfor %}
+            </ol>
+            
+            <div class="carousel-inner">
+                {% for product in advertised_products %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <div class="carousel-content">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="carousel-text">
+                                    <h3>{{ product.name }}</h3>
+                                    <p class="product-description">{{ product.description|truncatechars:100 }}</p>
+                                    <div class="price-info">
+                                        {% if product.discounted_price %}
+                                            <span class="original-price" style="text-decoration: line-through; color: #888;">₹{{ product.price|floatformat:0 }}</span>
+                                            <span class="discounted-price" style="color: #d32f2f; font-weight: bold; margin-left: 8px;">₹{{ product.discounted_price|floatformat:0 }}</span>
+                                        {% else %}
+                                            <span class="current-price">₹{{ product.price|floatformat:0 }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="product-actions text-center mt-3">
+                                        <a href="{% url 'product-detail' product.id %}" class="btn btn-primary btn-lg font-weight-bold" style="background: #ff9800; border: none; color: #fff; padding: 12px 32px; border-radius: 30px; font-size: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: background 0.2s;" data-bs-target="" data-bs-slide="" onclick="event.stopPropagation();">
+                                            <i class="fas fa-eye mr-2"></i> View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <img src="{{ product.imageURL }}" alt="{{ product.name }}" class="carousel-image">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <a class="carousel-control-prev" href="#productCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#productCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Categories Grid -->
+    <div class="categories-section">
+        <div class="container">
+            <h2 class="section-title">Shop by Category</h2>
+            <div class="categories-grid">
+                {% for category in categories %}
+                <div class="category-card" onclick="navigateToCategory('{{ category.name|escapejs }}')">
+                    <div class="category-icon">
+                        <img src="{{ category.image }}" alt="{{ category.name }}" class="category-image">
+                    </div>
+                    <div class="category-info">
+                        <h4 class="category-name">{{ category.name }}</h4>
+                        <p class="category-count">{{ category.product_count }} items</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Auto-play carousel
+$(document).ready(function() {
+    $('#productCarousel').carousel({
+        interval: 4000,
+        pause: 'hover'
+    });
+});
+
+function navigateToCategory(categoryName) {
+    const encodedCategory = encodeURIComponent(categoryName);
+    window.location.href = `/category/${encodedCategory}/`;
+}
+</script>
+{% endblock content %}
