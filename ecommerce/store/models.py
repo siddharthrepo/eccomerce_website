@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from vendor.models import Vendor
+from .chroma_utils import add_product_to_chroma
 # Create your models here.
 
 class Customer(models.Model):
@@ -33,6 +34,23 @@ class Product(models.Model):
         except:
             url = ""
         return url
+
+    def get_textual_representation(self):
+        return f"""
+            id:{self.id},
+            ProductName:{self.name},
+            Brand: {self.Brand or ''},
+            Category:{self.catgory or ''},
+            SubCategory:{self.sub_catgory or ''},
+            Description: {self.description or ''}
+        """
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        # After saving, ensure the product has an ID
+        text = self.get_textual_representation()
+        add_product_to_chroma(self.id, text)
 
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL , null=True , blank=True)

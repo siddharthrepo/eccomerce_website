@@ -6,6 +6,7 @@ from itertools import groupby
 from .models import *
 from .utils import cookieCart , cartData , guestOrder
 import random
+from .chroma_utils import query_similar_products
 # Create your views here.
 def store(request):
 
@@ -197,38 +198,18 @@ def search_product(request):
 
     
 
-import google.generativeai as genai    
-import faiss
-import pandas as pd
-from .recommendation_functions import recommend
-import re
 def product_detail(request, pk):
-    df = pd.read_csv('/home/siddharth/Desktop/Django_dev/Django_Ecommerce_app/backup/description.csv')
-
-    def create_textual_representation(row):
-        textual_rep = f"""
-            id:{row['id']},
-            ProductName:{row['name']},
-            Brand: {row['Brand']},
-            Category:{row['catgory']},
-            SubCategory:{row['sub_catgory']},
-            Description: {row["description"]}
-
-        """
-        return textual_rep
-
-    df['textual_representation'] = df.apply(create_textual_representation , axis=1)
-    GOOGLE_API_KEY = "AIzaSyDjEhm7Cz4zMrlz292c6pUJEAUw-Geimh0"
-    genai.configure(api_key=GOOGLE_API_KEY)
-    index = faiss.read_index('/home/siddharth/Desktop/Django_dev/Django_Ecommerce_app/recommendation_system/index')
-
     product = get_object_or_404(Product, pk=pk)
-    print(product.id)
-    # rec = product.name + " "+ product.Brand + " " + product.catgory + " " + product.sub_catgory + " "+ product.description
-    best_matches = recommend(df , product.id , index)
-    recommended_products = []
-    for i in best_matches:
-        match = re.search(r'id:(\d+)', i)
-        prod = Product.objects.get(id=match.group(1))
-        recommended_products.append(prod)
+    # Use the same textual representation as in your migration (or model method if available)
+    query_text = f"""
+        id:{product.id},
+        ProductName:{product.name},
+        Brand: {getattr(product, 'Brand', '')},
+        Category:{product.catgory},
+        SubCategory:{getattr(product, 'sub_catgory', '')},
+        Description: {product.description}
+    """
+    similar_ids = query_similar_products(query_text, n_results=9)
+    similar_ids = [int(i) for i in similar_ids if int(i) != product.id]
+    recommended_products = Product.objects.filter(id__in=similar_ids)
     return render(request, 'store/product_detail.html', {'product': product , 'recommended_products' : recommended_products })
