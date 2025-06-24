@@ -7,15 +7,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
+            --primary-color: #28a745;
+            --secondary-color: #218838;
             --success-color: #4CAF50;
             --danger-color: #e63946;
             --warning-color: #ff9f1c;
             --light-color: #f8f9fa;
             --dark-color: #212529;
             --border-color: #dee2e6;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
         }
 
         * {
@@ -26,7 +26,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fb;
+            background-color: #f8f9fa;
             color: #333;
             line-height: 1.6;
         }
@@ -100,7 +100,7 @@
         }
 
         .sidebar-menu a:hover, .sidebar-menu a.active {
-            background-color: #f0f4ff;
+            background-color: #eafbe7;
             color: var(--primary-color);
             border-left: 4px solid var(--primary-color);
         }
@@ -149,13 +149,13 @@
         .section-title {
             font-size: 1.2rem;
             font-weight: 600;
-            color: var(--dark-color);
+            color: var(--primary-color);
         }
 
         .search-box {
             display: flex;
             align-items: center;
-            background-color: #f5f7fb;
+            background-color: #eafbe7;
             border-radius: 4px;
             padding: 0.5rem 1rem;
             margin-bottom: 1rem;
@@ -170,7 +170,7 @@
         }
 
         .search-box i {
-            color: #777;
+            color: #28a745;
         }
 
         /* Tables */
@@ -188,9 +188,9 @@
         }
 
         th {
-            background-color: #f8f9fa;
+            background-color: #eafbe7;
             font-weight: 600;
-            color: #555;
+            color: #333;
         }
 
         tbody tr:hover {
@@ -220,12 +220,12 @@
         }
 
         .btn-success {
-            background-color: var(--success-color);
+            background-color: #43d17a;
             color: white;
         }
 
         .btn-success:hover {
-            background-color: #3d8b40;
+            background-color: #28a745;
         }
 
         .btn-danger {
@@ -254,6 +254,8 @@
             border-radius: 8px;
             overflow: hidden;
             margin-bottom: 1.5rem;
+            background: white;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.07);
         }
 
         .order-header {
@@ -261,7 +263,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 1rem;
-            background-color: #f8f9fa;
+            background-color: #eafbe7;
             border-bottom: 1px solid var(--border-color);
         }
 
@@ -368,7 +370,7 @@
         }
 
         .active-customer {
-            background-color: #f0f4ff;
+            background-color: #eafbe7;
         }
     </style>
 </head>
@@ -689,7 +691,7 @@
                             <tr>
                                 <td>${item.product_name}</td>
                                 <td>${item.quantity}</td>
-                                <td>${item.date_added}</td>
+                                <td>${formatToIST(item.date_added)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -835,6 +837,13 @@
                 }
             }
             return cookieValue;
+        }
+
+        function formatToIST(utcDateString) {
+            if (!utcDateString) return '';
+            const utcDate = new Date(utcDateString);
+            // Convert to Asia/Kolkata (IST) timezone
+            return utcDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         }
     </script>
 </body>

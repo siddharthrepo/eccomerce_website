@@ -14,14 +14,15 @@ def cookieCart(request):
         try:    
             cartItems += cart[i]['quantity']
             product = Product.objects.get(id=i)
-            total = (product.price * cart[i]['quantity'])
+            price = product.discounted_price if product.discounted_price else product.price
+            total = price * cart[i]['quantity']
             order['get_cart_total'] += total
             order['get_cart_items'] += cart[i]['quantity']
             item = {
                 'product' :{
                     'id' : product.id,
                     'name': product.name,
-                    'price':product.price,
+                    'price': price,
                     'imageURL':product.imageURL,
                 },
                 'quantity':cart[i]['quantity'],

@@ -75,7 +75,10 @@ from store.models import Product
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['inventory', 'name', 'price', 'digital', 'image']
+        fields = ['inventory', 'name', 'price', 'digital', 'image', 'description', 'catgory', 'sub_catgory']  # Added category and subcategory
         widgets = {
             'digital': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Enter product description here', 'class': 'form-control'}),
+            'catgory': forms.TextInput(attrs={'placeholder': 'Category', 'class': 'form-control'}),
+            'sub_catgory': forms.TextInput(attrs={'placeholder': 'Subcategory', 'class': 'form-control'}),
         }

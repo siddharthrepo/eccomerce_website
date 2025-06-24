@@ -1,0 +1,75 @@
+{% extends 'store/main.html' %}
+{% block content %}
+<div class="container my-5">
+    <h2>My Profile</h2>
+    <form method="post" class="mb-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Update Profile</button>
+        {% if messages %}
+            <div class="mt-2">
+                {% for message in messages %}
+                    <div class="alert alert-success">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </form>
+    <h3>Order History</h3>
+    {% if orders %}
+        <div class="order-history-list">
+            {% for order in orders %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Order Placed:</strong> {{ order.date_ordered|date:"d M Y, H:i" }}<br>
+                        <strong>Status:</strong> {{ order.status|default:"Processing" }}
+                    </div>
+                    <div>
+                        <strong>Order #{{ order.id }}</strong><br>
+                        <span class="text-success">Total: ₹{{ order.get_cart_total|floatformat:2 }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% for item in order.orderitem_set.all %}
+                    <div class="row align-items-center mb-3 pb-3 border-bottom">
+                        <div class="col-md-2 col-4">
+                            <img src="{{ item.product.imageURL }}" alt="{{ item.product.name }}" class="img-fluid rounded" style="max-height: 80px;">
+                        </div>
+                        <div class="col-md-6 col-8">
+                            <div><strong>{{ item.product.name }}</strong></div>
+                            <div>Quantity: {{ item.quantity }}</div>
+                        </div>
+                        <div class="col-md-4 text-md-right text-left">
+                            <div class="text-danger" style="font-size:1.1em; font-weight:600;">
+                                {% if item.product.discounted_price %}
+                                    <span style="text-decoration: line-through; color: #888;">₹{{ item.product.price|floatformat:2 }}</span>
+                                    <span style="color: #d32f2f; font-weight: bold; margin-left: 8px;">₹{{ item.product.discounted_price|floatformat:2 }}</span>
+                                {% else %}
+                                    ₹{{ item.product.price|floatformat:2 }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>You have not placed any orders yet.</p>
+    {% endif %}
+</div>
+<style>
+.order-history-list .card {
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+}
+.order-history-list .card-header {
+    background: #f8f9fa;
+    font-size: 1.05em;
+}
+.order-history-list .row {
+    align-items: center;
+}
+</style>
+{% endblock %}
