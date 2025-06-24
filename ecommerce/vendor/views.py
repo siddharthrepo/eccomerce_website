@@ -77,7 +77,7 @@ def vendor_logout_view(request):
     messages.success(request, "You have been logged out successfully.")
     
     # Redirect the vendor to the login page (or home page)
-    return redirect('vendor_login')
+    return redirect('store')
 
 
 from django.core.paginator import Paginator
@@ -168,7 +168,7 @@ def vendor_ordered_items_api(request, vendor_id):
                 "product_name": item.product.name,
                 "order_status": item.order.status if item.order else "N/A",
                 "quantity": item.quantity,
-                "date_added": item.date_added.strftime("%Y-%m-%d %H:%M:%S")
+                "date_added": item.date_added.isoformat()  # Use ISO format for JS conversion
             })
         return Response(response_data, status=200)
     except Vendor.DoesNotExist:
@@ -225,7 +225,7 @@ def update_inventory(request, product_id):
         if new_inventory.isdigit():
             product.inventory = int(new_inventory)
             product.save()
-            return redirect('product_management')  # Change to your actual dashboard view
+            return redirect('product_management')  
     
     return render(request, "vendor/update_inventory.html", {'product': product})
 

@@ -95,7 +95,8 @@ class OrderItem(models.Model):
 
     @property   
     def get_total(self):
-        total = self.product.price * self.quantity
+        price = self.product.discounted_price if self.product.discounted_price else self.product.price
+        total = price * self.quantity
         return total
     
 class ShippingAddress(models.Model):

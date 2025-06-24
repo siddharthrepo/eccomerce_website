@@ -58,14 +58,14 @@
             <div class="product-details">
                 <h3 class="product-name">{{ product.name }}</h3>
                 <p class="product-category">{{ product.category }}</p>
-                <p class="product-price">${{ product.price|floatformat:2 }}</p>
+                <p class="product-price">₹{{ product.price|floatformat:2 }}</p>
                 <p class="product-inventory">
                     Inventory: <span id="inventory-{{ product.id }}" class="inventory-count">Loading...</span>
                 </p>
                 <div class="product-actions">
-                    <button class="btn btn-sm btn-outline-primary update-inventory" data-product-id="{{ product.id }}">
+                    <a href="{% url 'update_inventory' product.id %}" class="btn btn-sm btn-outline-primary">
                         Update Inventory
-                    </button>
+                    </a>
                     <button class="btn btn-sm btn-outline-secondary view-product" onclick="viewProduct({{ product.id }})">
                         View Details
                     </button>

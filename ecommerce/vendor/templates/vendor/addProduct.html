@@ -1,13 +1,69 @@
 {% extends 'vendorLayout/app.html' %}
 
 {% block content %}
-    <div class="container">
-        <h2>Add Product</h2>
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn">Add Product</button>
-        </form>
-    </div>
+<style>
+    .add-product-card {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 2px 16px rgba(56,142,60,0.10);
+        padding: 36px 32px 28px 32px;
+        max-width: 520px;
+        margin: 40px auto 0 auto;
+    }
+    .add-product-title {
+        color: #388e3c;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+    .add-product-form label {
+        color: #2e7d32;
+        font-weight: 600;
+    }
+    .add-product-form input, .add-product-form select, .add-product-form textarea {
+        border-radius: 8px;
+        border: 1px solid #c8e6c9;
+        margin-bottom: 18px;
+        padding: 10px 12px;
+        width: 100%;
+        background: #f6fff8;
+    }
+    .add-product-form input:focus, .add-product-form select:focus, .add-product-form textarea:focus {
+        border-color: #43a047;
+        box-shadow: 0 0 0 2px #c8e6c9;
+        outline: none;
+    }
+    .add-product-form .btn {
+        background: #43a047;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 30px;
+        padding: 12px 32px;
+        font-size: 1.1rem;
+        box-shadow: 0 2px 8px rgba(56,142,60,0.08);
+        border: none;
+        transition: background 0.2s;
+        width: 100%;
+    }
+    .add-product-form .btn:hover {
+        background: #2e7d32;
+    }
+</style>
+<div class="add-product-card">
+    <div class="add-product-title">Add New Product</div>
+    <form method="POST" enctype="multipart/form-data" class="add-product-form">
+        {% csrf_token %}
+        {% for field in form %}
+            {% if field.name != 'digital' %}
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text }}</small>{% endif %}
+                {% for error in field.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            {% endif %}
+        {% endfor %}
+        <button type="submit" class="btn">Add Product</button>
+    </form>
+</div>
 {% endblock content%}
 
