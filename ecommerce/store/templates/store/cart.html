@@ -37,7 +37,16 @@
                 <div class="cart-row">
                     <div style="flex:2"><img class="row-image" src="{{item.product.imageURL}}"></div>
                     <div style="flex:2"><p>{{item.product.name}}</p></div>
-                    <div style="flex:1"><p>{{item.product.price | floatformat:2}}</p></div>
+                    <div style="flex:1">
+                        <p>
+                            {% if item.product.discounted_price %}
+                                <span style="text-decoration: line-through; color: #888;">₹{{ item.product.price|floatformat:2 }}</span>
+                                <span style="color: #d32f2f; font-weight: bold; margin-left: 8px;">₹{{ item.product.discounted_price|floatformat:2 }}</span>
+                            {% else %}
+                                ₹{{ item.product.price|floatformat:2 }}
+                            {% endif %}
+                        </p>
+                    </div>
                     <div style="flex:1">
                         <p class="quantity">{{item.quantity}}</p>
                         <div class="quantity">
