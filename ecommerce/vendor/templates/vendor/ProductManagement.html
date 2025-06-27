@@ -57,8 +57,15 @@
             </div>
             <div class="product-details">
                 <h3 class="product-name">{{ product.name }}</h3>
-                <p class="product-category">{{ product.category }}</p>
-                <p class="product-price">₹{{ product.price|floatformat:2 }}</p>
+                <p class="product-category">{{ product.catgory }}</p>
+                {% if product.discounted_price %}
+                    <p class="product-price">
+                        <span style="text-decoration: line-through; color: #888;">₹{{ product.price|floatformat:2 }}</span>
+                        <span style="color: #d32f2f; font-weight: bold; margin-left: 8px;">₹{{ product.discounted_price|floatformat:2 }}</span>
+                    </p>
+                {% else %}
+                    <p class="product-price">₹{{ product.price|floatformat:2 }}</p>
+                {% endif %}
                 <p class="product-inventory">
                     Inventory: <span id="inventory-{{ product.id }}" class="inventory-count">Loading...</span>
                 </p>
@@ -69,6 +76,12 @@
                     <button class="btn btn-sm btn-outline-secondary view-product" onclick="viewProduct({{ product.id }})">
                         View Details
                     </button>
+                    <form method="post" action="{% url 'delete_product' product.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this product? This will also remove it from recommendations.');">
+                            Delete
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -149,41 +162,95 @@
     .search-filter-container {
         display: flex;
         justify-content: space-between;
+        align-items: center;
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
     }
-
-    .search-box {
-        position: relative;
-        flex: 1;
-        max-width: 300px;
-    }
-
-    .search-box input {
-        width: 100%;
-        padding: 10px 30px 10px 10px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-    }
-
-    .search-box i {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #6c757d;
-    }
-
-    .filter-options {
+    
+    /* Search Form Styling */
+    .search-form {
         display: flex;
+        align-items: center;
         gap: 10px;
+        width: 100%;
     }
-
-    .filter-options select {
+    
+    /* Search Input */
+    .search-form input[type="text"] {
+        width: 250px;
         padding: 8px;
         border: 1px solid #ced4da;
-        border-radius: 4px;
+        border-radius: 5px;
+        font-size: 14px;
     }
-
+    
+    /* Search Button */
+    .search-button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .search-button:hover {
+        background-color: #0056b3;
+    }
+    
+    /* Filter Section */
+    .search-form select {
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        font-size: 14px;
+        background-color: white;
+        cursor: pointer;
+    }
+    
+    /* Filter Button */
+    .filter-button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .filter-button:hover {
+        background-color: #218838;
+    }
+    
+    /* Flexbox Adjustments */
+    .search-form select,
+    .filter-button {
+        margin-left: 10px;
+    }
+    
+    /* Responsive Design */
+    @media screen and (max-width: 768px) {
+        .search-filter-container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+    
+        .search-form {
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+        }
+    
+        .search-form input[type="text"] {
+            width: 100%;
+        }
+    }
     .products-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -316,100 +383,6 @@
         margin: 0 10px;
         color: #333;
     }
-    .search-filter-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #f8f9fa;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-    }
-    
-    /* Search Form Styling */
-    .search-form {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        width: 100%;
-    }
-    
-    /* Search Input */
-    .search-form input[type="text"] {
-        width: 250px;
-        padding: 8px;
-        border: 1px solid #ced4da;
-        border-radius: 5px;
-        font-size: 14px;
-    }
-    
-    /* Search Button */
-    .search-button {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    
-    .search-button:hover {
-        background-color: #0056b3;
-    }
-    
-    /* Filter Section */
-    .search-form select {
-        padding: 8px;
-        border: 1px solid #ced4da;
-        border-radius: 5px;
-        font-size: 14px;
-        background-color: white;
-        cursor: pointer;
-    }
-    
-    /* Filter Button */
-    .filter-button {
-        background-color: #28a745;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    
-    .filter-button:hover {
-        background-color: #218838;
-    }
-    
-    /* Flexbox Adjustments */
-    .search-form select,
-    .filter-button {
-        margin-left: 10px;
-    }
-    
-    /* Responsive Design */
-    @media screen and (max-width: 768px) {
-        .search-filter-container {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-        }
-    
-        .search-form {
-            flex-direction: column;
-            align-items: flex-start;
-            width: 100%;
-        }
-    
-        .search-form input[type="text"] {
-            width: 100%;
-        }
-    }
-    
-    
 </style>
 
 <script>

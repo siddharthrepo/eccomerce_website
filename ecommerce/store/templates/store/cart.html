@@ -26,6 +26,23 @@
 		<br>
 		<div class="box-element">
             <div class="box-element">
+                {% if missing_items %}
+                <div class="alert alert-danger" style="margin-top: 20px;">
+                    <strong>Some items in your cart are out of stock or unavailable:</strong>
+                    <ul>
+                        {% for item in missing_items %}
+                            <li>
+                                {% if item.product %}
+                                    {{ item.product.name }} (Requested: {{ item.quantity }}, Available: {{ item.product.inventory|default:'0' }})
+                                {% else %}
+                                    [Product unavailable] (Requested: {{ item.quantity }})
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    Please remove or update these items before proceeding to checkout.
+                </div>
+                {% endif %}
                 <div class="cart-row">
                     <div style="flex:2"></div>
                     <div style="flex:2"><strong>Item</strong></div>
@@ -34,9 +51,14 @@
                     <div style="flex:1"><strong>Total</strong></div>
                 </div>
                 {% for item in items %}
-                <div class="cart-row">
+                <div class="cart-row" style="{% if not item.product or not item.product.inventory or item.product.inventory < item.quantity %}opacity:0.5; pointer-events: none;{% endif %}">
                     <div style="flex:2"><img class="row-image" src="{{item.product.imageURL}}"></div>
-                    <div style="flex:2"><p>{{item.product.name}}</p></div>
+                    <div style="flex:2">
+                        <p>{{item.product.name}}</p>
+                        {% if not item.product or not item.product.inventory or item.product.inventory < item.quantity %}
+                            <span class="text-danger"><strong>Out of Stock - Remove this product before checkout</strong></span>
+                        {% endif %}
+                    </div>
                     <div style="flex:1">
                         <p>
                             {% if item.product.discounted_price %}
@@ -51,7 +73,6 @@
                         <p class="quantity">{{item.quantity}}</p>
                         <div class="quantity">
                             <img data-product={{item.product.id}} data-action="add" class="chg-quantity update-cart" src="{% static  'images/arrow-up.png' %}">
-                    
                             <img data-product={{item.product.id}} data-action="remove" class="chg-quantity update-cart" src="{% static  'images/arrow-down.png' %}">
                         </div>
                     </div>

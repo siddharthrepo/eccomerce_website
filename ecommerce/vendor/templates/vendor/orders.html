@@ -301,11 +301,6 @@
             font-weight: 500;
         }
 
-        .status-pending {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
         .status-delivery {
             background-color: #cce5ff;
             color: #004085;
@@ -314,6 +309,11 @@
         .status-delivered {
             background-color: #d4edda;
             color: #155724;
+        }
+
+        .status-to-be-delivered {
+            background-color: #ffe082;
+            color: #795548;
         }
 
         .status-form {
@@ -434,9 +434,9 @@
                     <div>
                         <select id="statusFilter">
                             <option value="all">All Statuses</option>
-                            <option value="Pending">Pending</option>
                             <option value="Out for delivery">Out for delivery</option>
                             <option value="Delivered">Delivered</option>
+                            <option value="To be delivered">To be delivered</option>
                         </select>
                     </div>
                 </div>
@@ -534,7 +534,7 @@
                     orders[orderId] = {
                         id: orderId,
                         customer_name: customerName,
-                        status: item.order_status || "Pending",
+                        status: item.order_status || "To be delivered",
                         items: []
                     };
                 }
@@ -657,7 +657,8 @@
                 orderStatus.className = 'order-status';
                 
                 let statusClass = '';
-                if (order.status === 'Pending') statusClass = 'status-pending';
+                // Remove all references to 'Pending', use 'To be delivered' instead
+                if (order.status === 'To be delivered') statusClass = 'status-to-be-delivered';
                 else if (order.status === 'Out for delivery') statusClass = 'status-delivery';
                 else if (order.status === 'Delivered') statusClass = 'status-delivered';
                 
@@ -668,7 +669,7 @@
                     </div>
                     <form class="status-form" onsubmit="event.preventDefault(); updateStatus(${order.id});">
                         <select id="status-${order.id}">
-                            <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="To be delivered" ${order.status === 'To be delivered' ? 'selected' : ''}>To be delivered</option>
                             <option value="Out for delivery" ${order.status === 'Out for delivery' ? 'selected' : ''}>Out for delivery</option>
                             <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
                         </select>
@@ -781,7 +782,7 @@
             statusElement.innerText = 'Updating...';
             
             // Send update request to the server
-            fetch(`/api/update-order-status/${orderId}/`, {
+            fetch(`/update_order_status/${orderId}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -801,7 +802,7 @@
                 
                 // Update status class
                 statusElement.className = 'status-value';
-                if (status === 'Pending') statusElement.classList.add('status-pending');
+                if (status === 'To be delivered') statusElement.classList.add('status-to-be-delivered');
                 else if (status === 'Out for delivery') statusElement.classList.add('status-delivery');
                 else if (status === 'Delivered') statusElement.classList.add('status-delivered');
                 
