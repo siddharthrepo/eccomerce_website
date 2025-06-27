@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login , logout
 from  store.models import Product
-
+import json
 
 def vendor_register_view(request):
     if request.method == 'POST':
@@ -237,11 +237,19 @@ from .models import Vendor
 
 @csrf_exempt  # Temporarily disabling CSRF for demo purposes (use proper authentication in production!)
 def update_order_status(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
     if request.method == "POST":
-        order = get_object_or_404(Order, id=order_id)
-        new_status = request.POST.get("status")
+        # Accept both form-encoded and JSON
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                new_status = data.get("status")
+            except Exception:
+                return JsonResponse({"error": "Invalid JSON"}, status=400)
+        else:
+            new_status = request.POST.get("status")
 
-        if new_status in ["Pending", "Out for delivery", "Delivered"]:
+        if new_status in ["To be delivered", "Out for delivery", "Delivered"]:
             order.status = new_status
             order.save()
             return JsonResponse({"message": "Order status updated successfully", "status": new_status})
@@ -249,3 +257,15 @@ def update_order_status(request, order_id):
             return JsonResponse({"error": "Invalid status"}, status=400)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+from django.views.decorators.http import require_POST
+from store.chroma_utils import delete_product_from_chroma
+
+@require_POST
+@login_required
+def delete_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id, vendor__email=request.user.email)
+    delete_product_from_chroma(product_id)
+    product.delete()
+    messages.success(request, 'Product deleted successfully!')
+    return redirect('product_management')

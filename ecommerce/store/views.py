@@ -91,9 +91,20 @@ def cart(request):
     items = data['items']
     order = data['order']
     cartItems = data['cartItems']
-    context = {"items" : items , 'order':order , "cartItems":cartItems}
 
-    return render(request , 'store/cart.html' , context)
+    # Find missing/out-of-stock items
+    missing_items = []
+    for item in items:
+        if not item.product or item.product.inventory is None or item.product.inventory < item.quantity:
+            missing_items.append(item)
+
+    context = {
+        "items": items,
+        'order': order,
+        "cartItems": cartItems,
+        "missing_items": missing_items,
+    }
+    return render(request, 'store/cart.html', context)
 
 def checkout(request):
     
@@ -120,10 +131,10 @@ def updateItem(request):
     print("product_id",product_id)
 
     # ✅ Always fetch the correct active cart
-    order = Order.objects.filter(customer=customer, status="Pending").order_by('-date_ordered').first()
+    order = Order.objects.filter(customer=customer, status="To be delivered").order_by('-date_ordered').first()
 
     if not order:
-        order = Order.objects.create(customer=customer, status="Pending")
+        order = Order.objects.create(customer=customer, status="To be delivered")
 
     product = Product.objects.get(id=product_id)
     orderItem, created = OrderItem.objects.get_or_create(order=order, product=product)
@@ -157,8 +168,8 @@ def processOrder(request):
 
     if request.user.is_authenticated:
         customer = request.user.customer
-        # Fetch only the latest "Pending" order
-        order = Order.objects.filter(customer=customer, status="Pending").order_by('-date_ordered').first()
+        # Fetch only the latest "To be delivered" order
+        order = Order.objects.filter(customer=customer, status="To be delivered").order_by('-date_ordered').first()
 
         if not order:
             return JsonResponse({"error": "No active order found!"}, status=400)
@@ -183,7 +194,7 @@ def processOrder(request):
                     return JsonResponse({"error": f"Not enough stock for {product.name}"}, status=400)
 
             # ✅ **Create a fresh order after checkout**
-            new_order = Order.objects.create(customer=customer, status="Pending")
+            new_order = Order.objects.create(customer=customer, status="To be delivered")
 
     else:
         customer, order = guestOrder(data, request)

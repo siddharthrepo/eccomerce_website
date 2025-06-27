@@ -56,11 +56,11 @@ class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL , null=True , blank=True)
     date_ordered = models.DateTimeField(auto_now_add=True)
     STATUS = (
-        ('Pending' , 'Pending'),
+        ('To be delivered', 'To be delivered'),
         ('Out for delivery' , 'out for Delivery'),
         ('Delivered' , "Delivered"),
     )
-    status = models.CharField(max_length=200 , null=True,default='Pending', choices= STATUS)
+    status = models.CharField(max_length=200 , null=True,default='To be delivered', choices= STATUS)
     transactions_id = models.CharField(max_length=100 , null=True)
     
     def __int__(self):
@@ -95,6 +95,8 @@ class OrderItem(models.Model):
 
     @property   
     def get_total(self):
+        if not self.product:
+            return 0
         price = self.product.discounted_price if self.product.discounted_price else self.product.price
         total = price * self.quantity
         return total
