@@ -394,7 +394,6 @@
                 <li><a href="#"><i class="fas fa-chart-line"></i> <span>Analytics</span></a></li>
                 <li><a href="#"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
                 <li><a href="#"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
-                <li>his page currently works only for vendor shivansh since vendor_id is hardcoded</li>
             </ul>
         </div>
 
@@ -458,13 +457,13 @@
     <script>
         // Global variables
         let vendorData = {
-            vendor: { vendor_name: "Loading..." },
+            vendor: { vendor_name: "{{vendor.vendor_name}}" },
             ordered_items: []
         };
         
         // Get vendor ID from URL or set a default
-        const urlParams = new URLSearchParams(window.location.search);
-        const vendorId = urlParams.get('vendor_id') || '0c1cb756-8c24-4ed8-9bf1-833e06f48a2d'; // Default to vendor ID 1 if not specified
+        
+        const vendorId = "{{vendor.id}}"
         
         // Fetch data when the page loads
         document.addEventListener('DOMContentLoaded', function() {
