@@ -1,4 +1,4 @@
-from django.shortcuts import render , get_object_or_404
+from django.shortcuts import render , get_object_or_404, redirect
 from django.http import JsonResponse
 import json
 import datetime
@@ -7,8 +7,12 @@ from .models import *
 from .utils import cookieCart , cartData , guestOrder
 import random
 from .chroma_utils import query_similar_products
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 def store(request):
+    # If a vendor is logged in, redirect to vendor dashboard
+    if request.user.is_authenticated and hasattr(request.user, 'vendor'):
+        return redirect('product_management')
 
     data = cartData(request)
     cartItems = data['cartItems']
@@ -87,9 +91,20 @@ def cart(request):
     items = data['items']
     order = data['order']
     cartItems = data['cartItems']
-    context = {"items" : items , 'order':order , "cartItems":cartItems}
 
-    return render(request , 'store/cart.html' , context)
+    # Find missing/out-of-stock items
+    missing_items = []
+    for item in items:
+        if not item.product or item.product.inventory is None or item.product.inventory < item.quantity:
+            missing_items.append(item)
+
+    context = {
+        "items": items,
+        'order': order,
+        "cartItems": cartItems,
+        "missing_items": missing_items,
+    }
+    return render(request, 'store/cart.html', context)
 
 def checkout(request):
     
@@ -116,10 +131,10 @@ def updateItem(request):
     print("product_id",product_id)
 
     # ✅ Always fetch the correct active cart
-    order = Order.objects.filter(customer=customer, status="Pending").order_by('-date_ordered').first()
+    order = Order.objects.filter(customer=customer, status="To be delivered").order_by('-date_ordered').first()
 
     if not order:
-        order = Order.objects.create(customer=customer, status="Pending")
+        order = Order.objects.create(customer=customer, status="To be delivered")
 
     product = Product.objects.get(id=product_id)
     orderItem, created = OrderItem.objects.get_or_create(order=order, product=product)
@@ -153,8 +168,8 @@ def processOrder(request):
 
     if request.user.is_authenticated:
         customer = request.user.customer
-        # Fetch only the latest "Pending" order
-        order = Order.objects.filter(customer=customer, status="Pending").order_by('-date_ordered').first()
+        # Fetch only the latest "To be delivered" order
+        order = Order.objects.filter(customer=customer, status="To be delivered").order_by('-date_ordered').first()
 
         if not order:
             return JsonResponse({"error": "No active order found!"}, status=400)
@@ -179,7 +194,7 @@ def processOrder(request):
                     return JsonResponse({"error": f"Not enough stock for {product.name}"}, status=400)
 
             # ✅ **Create a fresh order after checkout**
-            new_order = Order.objects.create(customer=customer, status="Pending")
+            new_order = Order.objects.create(customer=customer, status="To be delivered")
 
     else:
         customer, order = guestOrder(data, request)
@@ -213,3 +228,29 @@ def product_detail(request, pk):
     similar_ids = [int(i) for i in similar_ids if int(i) != product.id]
     recommended_products = Product.objects.filter(id__in=similar_ids)
     return render(request, 'store/product_detail.html', {'product': product , 'recommended_products' : recommended_products })
+
+@login_required
+def order_history(request):
+    customer = request.user.customer
+    orders = Order.objects.filter(customer=customer).order_by('-date_ordered')
+    # Exclude orders where all items have get_total=0
+    orders = [order for order in orders if any(item.get_total > 0 for item in order.orderitem_set.all())]
+    return render(request, 'store/order_history.html', {'orders': orders})
+
+from .forms import CustomerProfileForm
+from django.contrib import messages
+
+@login_required
+def customer_profile(request):
+    customer = request.user.customer
+    if request.method == 'POST':
+        form = CustomerProfileForm(request.POST, instance=customer)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+    else:
+        form = CustomerProfileForm(instance=customer)
+    orders = Order.objects.filter(customer=customer).order_by('-date_ordered')
+    # Exclude orders where all items have get_total=0
+    orders = [order for order in orders if any(item.get_total > 0 for item in order.orderitem_set.all())]
+    return render(request, 'store/customer_profile.html', {'form': form, 'orders': orders})

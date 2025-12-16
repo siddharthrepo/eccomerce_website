@@ -14,14 +14,15 @@ def cookieCart(request):
         try:    
             cartItems += cart[i]['quantity']
             product = Product.objects.get(id=i)
-            total = (product.price * cart[i]['quantity'])
+            price = product.discounted_price if product.discounted_price else product.price
+            total = price * cart[i]['quantity']
             order['get_cart_total'] += total
             order['get_cart_items'] += cart[i]['quantity']
             item = {
                 'product' :{
                     'id' : product.id,
                     'name': product.name,
-                    'price':product.price,
+                    'price': price,
                     'imageURL':product.imageURL,
                 },
                 'quantity':cart[i]['quantity'],
@@ -38,13 +39,17 @@ def cartData(request):
     if request.user.is_authenticated:  
         try:
             customer = request.user.customer
-            order = Order.objects.filter(customer=customer, status="Pending").order_by('-date_ordered').first()
+            order = Order.objects.filter(customer=customer, status="To be delivered").order_by('-date_ordered').first()
 
             if order:
+                # Remove order items with deleted or out-of-stock products
+                for item in order.orderitem_set.all():
+                    if not item.product or not item.product.inventory or item.product.inventory < 1:
+                        item.delete()
                 items = order.orderitem_set.all()
                 cartItems = order.get_cart_items 
             else:
-                order = Order.objects.create(customer=customer, status="Pending")
+                order = Order.objects.create(customer=customer, status="To be delivered")
                 items = []
                 cartItems = 0 
         except Exception as e:

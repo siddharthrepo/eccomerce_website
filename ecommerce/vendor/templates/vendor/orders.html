@@ -7,15 +7,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
+            --primary-color: #28a745;
+            --secondary-color: #218838;
             --success-color: #4CAF50;
             --danger-color: #e63946;
             --warning-color: #ff9f1c;
             --light-color: #f8f9fa;
             --dark-color: #212529;
             --border-color: #dee2e6;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
         }
 
         * {
@@ -26,7 +26,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fb;
+            background-color: #f8f9fa;
             color: #333;
             line-height: 1.6;
         }
@@ -100,7 +100,7 @@
         }
 
         .sidebar-menu a:hover, .sidebar-menu a.active {
-            background-color: #f0f4ff;
+            background-color: #eafbe7;
             color: var(--primary-color);
             border-left: 4px solid var(--primary-color);
         }
@@ -149,13 +149,13 @@
         .section-title {
             font-size: 1.2rem;
             font-weight: 600;
-            color: var(--dark-color);
+            color: var(--primary-color);
         }
 
         .search-box {
             display: flex;
             align-items: center;
-            background-color: #f5f7fb;
+            background-color: #eafbe7;
             border-radius: 4px;
             padding: 0.5rem 1rem;
             margin-bottom: 1rem;
@@ -170,7 +170,7 @@
         }
 
         .search-box i {
-            color: #777;
+            color: #28a745;
         }
 
         /* Tables */
@@ -188,9 +188,9 @@
         }
 
         th {
-            background-color: #f8f9fa;
+            background-color: #eafbe7;
             font-weight: 600;
-            color: #555;
+            color: #333;
         }
 
         tbody tr:hover {
@@ -220,12 +220,12 @@
         }
 
         .btn-success {
-            background-color: var(--success-color);
+            background-color: #43d17a;
             color: white;
         }
 
         .btn-success:hover {
-            background-color: #3d8b40;
+            background-color: #28a745;
         }
 
         .btn-danger {
@@ -254,6 +254,8 @@
             border-radius: 8px;
             overflow: hidden;
             margin-bottom: 1.5rem;
+            background: white;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.07);
         }
 
         .order-header {
@@ -261,7 +263,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 1rem;
-            background-color: #f8f9fa;
+            background-color: #eafbe7;
             border-bottom: 1px solid var(--border-color);
         }
 
@@ -299,11 +301,6 @@
             font-weight: 500;
         }
 
-        .status-pending {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
         .status-delivery {
             background-color: #cce5ff;
             color: #004085;
@@ -312,6 +309,11 @@
         .status-delivered {
             background-color: #d4edda;
             color: #155724;
+        }
+
+        .status-to-be-delivered {
+            background-color: #ffe082;
+            color: #795548;
         }
 
         .status-form {
@@ -368,7 +370,7 @@
         }
 
         .active-customer {
-            background-color: #f0f4ff;
+            background-color: #eafbe7;
         }
     </style>
 </head>
@@ -392,7 +394,6 @@
                 <li><a href="#"><i class="fas fa-chart-line"></i> <span>Analytics</span></a></li>
                 <li><a href="#"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
                 <li><a href="#"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
-                <li>his page currently works only for vendor shivansh since vendor_id is hardcoded</li>
             </ul>
         </div>
 
@@ -432,9 +433,9 @@
                     <div>
                         <select id="statusFilter">
                             <option value="all">All Statuses</option>
-                            <option value="Pending">Pending</option>
                             <option value="Out for delivery">Out for delivery</option>
                             <option value="Delivered">Delivered</option>
+                            <option value="To be delivered">To be delivered</option>
                         </select>
                     </div>
                 </div>
@@ -456,13 +457,13 @@
     <script>
         // Global variables
         let vendorData = {
-            vendor: { vendor_name: "Loading..." },
+            vendor: { vendor_name: "{{vendor.vendor_name}}" },
             ordered_items: []
         };
         
         // Get vendor ID from URL or set a default
-        const urlParams = new URLSearchParams(window.location.search);
-        const vendorId = urlParams.get('vendor_id') || '0c1cb756-8c24-4ed8-9bf1-833e06f48a2d'; // Default to vendor ID 1 if not specified
+        
+        const vendorId = "{{vendor.id}}"
         
         // Fetch data when the page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -532,7 +533,7 @@
                     orders[orderId] = {
                         id: orderId,
                         customer_name: customerName,
-                        status: item.order_status || "Pending",
+                        status: item.order_status || "To be delivered",
                         items: []
                     };
                 }
@@ -655,7 +656,8 @@
                 orderStatus.className = 'order-status';
                 
                 let statusClass = '';
-                if (order.status === 'Pending') statusClass = 'status-pending';
+                // Remove all references to 'Pending', use 'To be delivered' instead
+                if (order.status === 'To be delivered') statusClass = 'status-to-be-delivered';
                 else if (order.status === 'Out for delivery') statusClass = 'status-delivery';
                 else if (order.status === 'Delivered') statusClass = 'status-delivered';
                 
@@ -666,7 +668,7 @@
                     </div>
                     <form class="status-form" onsubmit="event.preventDefault(); updateStatus(${order.id});">
                         <select id="status-${order.id}">
-                            <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="To be delivered" ${order.status === 'To be delivered' ? 'selected' : ''}>To be delivered</option>
                             <option value="Out for delivery" ${order.status === 'Out for delivery' ? 'selected' : ''}>Out for delivery</option>
                             <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
                         </select>
@@ -689,7 +691,7 @@
                             <tr>
                                 <td>${item.product_name}</td>
                                 <td>${item.quantity}</td>
-                                <td>${item.date_added}</td>
+                                <td>${formatToIST(item.date_added)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -779,7 +781,7 @@
             statusElement.innerText = 'Updating...';
             
             // Send update request to the server
-            fetch(`/api/update-order-status/${orderId}/`, {
+            fetch(`/update_order_status/${orderId}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -799,7 +801,7 @@
                 
                 // Update status class
                 statusElement.className = 'status-value';
-                if (status === 'Pending') statusElement.classList.add('status-pending');
+                if (status === 'To be delivered') statusElement.classList.add('status-to-be-delivered');
                 else if (status === 'Out for delivery') statusElement.classList.add('status-delivery');
                 else if (status === 'Delivered') statusElement.classList.add('status-delivered');
                 
@@ -835,6 +837,13 @@
                 }
             }
             return cookieValue;
+        }
+
+        function formatToIST(utcDateString) {
+            if (!utcDateString) return '';
+            const utcDate = new Date(utcDateString);
+            // Convert to Asia/Kolkata (IST) timezone
+            return utcDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         }
     </script>
 </body>

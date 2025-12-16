@@ -10,11 +10,11 @@
     {%endcomment%}
     {%for product in products%}
         <div class="col-lg-4">
-            <img class="thumbnail" src="{{product.imageURL}}" alt="">
-            <div class="box-element product">
+            <div class="box-element product" style="{% if not product.inventory or product.inventory == 0 %}opacity:0.5; pointer-events: none;{% endif %}">
+                <img class="thumbnail" src="{{product.imageURL}}" alt="">
                 <h6><strong>{{product.name}}</strong></h6>
                 <hr>
-                <button data-product="{{product.id}}" data-action="add" class="btn btn-outline-secondary add-btn update-cart">Add To Cart</button>
+                <button data-product="{{product.id}}" data-action="add" class="btn btn-outline-secondary add-btn update-cart" {% if not product.inventory or product.inventory == 0 %}disabled{% endif %}>Add To Cart</button>
                 <a class="btn btn-outline-success" href="{% url 'product-detail' product.id %}">View</a>
                 <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap;">
                     {% if product.discounted_price %}
@@ -24,6 +24,9 @@
                         <span style="font-size: 1.1rem;">₹{{ product.price|floatformat:2 }}</span>
                     {% endif %}
                 </div>
+                {% if not product.inventory or product.inventory == 0 %}
+                    <div class="text-danger mt-2"><strong>Out of Stock</strong></div>
+                {% endif %}
             </div>
         </div>
     {% endfor %}

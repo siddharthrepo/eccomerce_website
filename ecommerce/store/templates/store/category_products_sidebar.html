@@ -65,7 +65,7 @@
                 {% if products %}
                 <div class="products-grid">
                     {% for product in products %}
-                    <div class="product-card">
+                    <div class="product-card" style="{% if not product.inventory or product.inventory == 0 %}opacity:0.5; pointer-events: none;{% endif %}">
                         <div class="product-image-container">
                             <img src="{{ product.imageURL }}" alt="{{ product.name }}" class="product-image">
                             {% if product.discounted_price %}
@@ -86,13 +86,16 @@
                                 {% endif %}
                             </div>
                             <div class="product-actions">
-                                <button data-product="{{ product.id }}" data-action="add" class="btn-add-to-cart update-cart">
+                                <button data-product="{{ product.id }}" data-action="add" class="btn-add-to-cart update-cart" {% if not product.inventory or product.inventory == 0 %}disabled{% endif %}>
                                     Add to Cart
                                 </button>
                                 <a href="{% url 'product-detail' product.id %}" class="btn-view-product">
                                     View Details
                                 </a>
                             </div>
+                            {% if not product.inventory or product.inventory == 0 %}
+                                <div class="text-danger mt-2"><strong>Out of Stock</strong></div>
+                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}

@@ -3,6 +3,7 @@
 {% block content %}
 <div class="container">
     <h2>Update Inventory for {{ product.name }}</h2>
+    <p class="text-success" style="font-size:1.2rem; font-weight:600;">Price: ₹{{ product.price|floatformat:2 }}</p>
     <form method="POST">
         {% csrf_token %}
         <div class="mb-3">
